@@ -7,7 +7,7 @@
 [![Codecov][codecov-src]][codecov-href]
 -->
 
-> 👨‍🔬 Pre-compiler helpers for single file components
+> 👨‍🔬 Pre-compiling helpers for SFCs.
 
 ## Usage
 
@@ -28,10 +28,10 @@ Import:
 
 ```js
 // ESM
-import {} from "sfc-composer";
+import { MagicVueSFC, createVueSFC } from 'sfc-composer'
 
 // CommonJS
-const {} = require("sfc-composer");
+const { createVueSFC, MagicVueSFC } = require('sfc-composer')
 ```
 
 ## Development
