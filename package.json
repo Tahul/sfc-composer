@@ -30,7 +30,7 @@
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs .",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix",
     "prepack": "pnpm run build",
-    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags",
+    "release": "release-it",
     "test": "pnpm lint && vitest run --coverage"
   },
   "dependencies": {
@@ -42,11 +42,30 @@
     "@vitest/ui": "^0.29.3",
     "changelogen": "^0.5.1",
     "eslint": "^8.36.0",
+    "release-it": "^15.9.0",
     "typescript": "^5.0.2",
     "unbuild": "^1.1.2",
     "vite": "^4.2.0",
     "vitest": "^0.29.3",
     "vue": "^3.2.47"
   },
-  "packageManager": "pnpm@7.28.0"
+  "packageManager": "pnpm@7.28.0",
+  "release-it": {
+    "hooks": {
+      "before:init": [
+        "pnpm build",
+        "pnpm test"
+      ]
+    },
+    "npm": {
+      "access": "public"
+    },
+    "git": {
+      "commitMessage": "chore(release): release v${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "v${version}"
+    }
+  }
 }
