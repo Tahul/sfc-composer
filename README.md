@@ -5,7 +5,7 @@
 [![Github Actions][github-actions-src]][github-actions-href]
 [![Codecov][codecov-src]][codecov-href]
 
-> 👨‍🔬 Pre-compiler helpers for Single File Components.
+> 👨‍🔬 Pre-compiler helpers for Single File Components
 
 ## Usage
 
