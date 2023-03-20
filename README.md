@@ -104,6 +104,7 @@ const MagicVueSFC = createVueSFC({
   },
   styles: [
     {
+      lang: 'scss', // scss | less | ts
       content: `.text {
   color: red;
 }`,
