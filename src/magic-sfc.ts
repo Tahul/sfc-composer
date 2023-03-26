@@ -10,9 +10,15 @@ export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
   public ms: MagicString
 
   constructor(
-    source: string,
+    source: string | MagicString,
     options?: T,
   ) {
+    if (source instanceof MagicString) {
+      this.source = source.toString()
+      this.ms = source
+      return
+    }
+
     this.source = source
     this.options = options
     this.ms = new MagicString(this.source, { filename: options?.filename, indentExclusionRanges: options?.indentExclusionRanges })
