@@ -1,4 +1,4 @@
-import { SourceMap } from 'magic-string'
+import MagicString, { SourceMap } from 'magic-string'
 import { describe, expect, it } from 'vitest'
 import { MagicVueSFC } from '../src/vue/sfc'
 
@@ -20,6 +20,18 @@ describe('Magic Vue SFC', () => {
     const sfc = new MagicVueSFC(scriptSetup)
 
     expect(sfc.toString()).toBe(scriptSetup)
+  })
+
+  it('Can create the class from a MagicString', () => {
+    const ms = new MagicString(scriptSetup)
+
+    const sfc = new MagicVueSFC(ms)
+
+    const appended = '\nlet secondTest: string'
+
+    sfc.scriptSetup.append(appended)
+
+    expect(sfc.toString()).toBe(`<script setup>let scriptSetup: string${appended}</script>`)
   })
 
   it('Can get a sourcemap', () => {

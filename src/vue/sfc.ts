@@ -1,5 +1,6 @@
 import { parse as vueParse } from 'vue/compiler-sfc'
 import type { SFCBlock, SFCParseOptions, SFCParseResult, SFCScriptBlock, SFCStyleBlock, SFCTemplateBlock } from 'vue/compiler-sfc'
+import type MagicString from 'magic-string'
 import type { MagicBlock } from '../proxy'
 import { proxyBlock } from '../proxy'
 import type { MagicSFCOptions } from '../index'
@@ -18,7 +19,7 @@ export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> exte
   public styles: MagicBlock<SFCStyleBlock>[] = []
 
   constructor(
-    source: string,
+    source: string | MagicString,
     options?: T,
   ) {
     super(source, options)
