@@ -1,7 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { parse } from 'vue/compiler-sfc'
 import { createVueSFC as create } from '../src/vue/create'
+import { defaults } from '../src/vue/sfc'
 
 describe('Create Vue SFC', () => {
+  beforeEach(() => {
+    // Set default parser for MagicVueSFC
+    defaults.parser = parse
+  })
+
   it('Can create an SFC with template, script, scriptSetup, and styles', () => {
     const sfc = create({
       template: {

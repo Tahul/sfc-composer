@@ -1,4 +1,3 @@
-import { parse as vueParse } from 'vue/compiler-sfc'
 import type { SFCBlock, SFCParseOptions, SFCParseResult, SFCScriptBlock, SFCStyleBlock, SFCTemplateBlock } from 'vue/compiler-sfc'
 import type MagicString from 'magic-string'
 import type { MagicBlock } from '../proxy'
@@ -6,28 +5,49 @@ import { proxyBlock } from '../proxy'
 import type { MagicSFCOptions } from '../index'
 import { MagicSFC } from '../index'
 
+type VueParseFunction = (source: string, { sourceMap, filename, sourceRoot, pad, ignoreEmpty, compiler }?: SFCParseOptions) => SFCParseResult
+
 export interface MagicVueSFCOptions extends MagicSFCOptions {
+  parser?: VueParseFunction
+  silent?: boolean
   parserOptions?: SFCParseOptions
 }
 
+export const defaults: MagicVueSFCOptions = {
+  parser: undefined,
+  silent: false,
+  parserOptions: undefined,
+}
+
 export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> extends MagicSFC<T> {
-  public sfc: SFCParseResult | null = null
-  public template: MagicBlock<SFCTemplateBlock> | null = null
-  public script: MagicBlock<SFCScriptBlock> | null = null
-  public scriptSetup: MagicBlock<SFCScriptBlock> | null = null
-  public customBlocks: MagicBlock<SFCBlock>[] | null = null
-  public styles: MagicBlock<SFCStyleBlock>[] = []
+  public parser?: VueParseFunction
+  public silent?: boolean
+  public sfc?: SFCParseResult
+  public template?: MagicBlock<SFCTemplateBlock>
+  public script?: MagicBlock<SFCScriptBlock>
+  public scriptSetup?: MagicBlock<SFCScriptBlock>
+  public customBlocks?: MagicBlock<SFCBlock>[]
+  public styles?: MagicBlock<SFCStyleBlock>[]
 
   constructor(
     source: string | MagicString,
     options?: T,
   ) {
-    super(source, options)
+    super(source, options || defaults as T)
+
+    if (this?.options?.parser) { this.parser = this.options.parser }
+    else { this.parser = defaults.parser }
+
     this.parse()
   }
 
   public parse(): void {
-    const parsedSfc = vueParse(this.ms.toString(), this.options?.parserOptions)
+    if (!this?.parser) {
+      if (!this?.options?.silent) { throw new Error('You must provide a `parser` function (from vue/compiler-sfc) in options when using MagicVueSFC.') }
+      return
+    }
+
+    const parsedSfc = this?.parser(this.ms.toString(), this.options?.parserOptions)
 
     if (!parsedSfc) { return }
 
