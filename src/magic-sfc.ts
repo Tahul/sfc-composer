@@ -1,27 +1,46 @@
 import type { MagicStringOptions, SourceMap, SourceMapOptions } from 'magic-string'
 import MagicString from 'magic-string'
 import type { TransformResult } from 'vite'
+import type { MagicBlock } from './proxy'
 
-export interface MagicSFCOptions extends MagicStringOptions {}
+export interface MagicSFCOptions extends MagicStringOptions {
+  parser?: any
+  parserOptions?: any
+  silent?: boolean
+}
+
+export const magicSfcDefaultOptions: MagicSFCOptions = {
+  parser: undefined,
+  silent: false,
+  parserOptions: undefined,
+}
 
 export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
   public source: string
-  public options?: T
   public ms: MagicString
+  public options: MagicSFCOptions = magicSfcDefaultOptions
+  public parsed?: any
+  public templates: MagicBlock<any>[] = []
+  public scripts: MagicBlock<any>[] = []
+  public styles: MagicBlock<any>[] = []
+  public customs: MagicBlock<any>[] = []
 
   constructor(
     source: string | MagicString,
     options?: T,
   ) {
+    this.options = { ...this.options, ...options }
+
     if (source instanceof MagicString) {
       this.source = source.toString()
       this.ms = source
-      return
+    }
+    else {
+      this.source = source
+      this.ms = new MagicString(this.source, { filename: options?.filename, indentExclusionRanges: options?.indentExclusionRanges })
     }
 
-    this.source = source
-    this.options = options
-    this.ms = new MagicString(this.source, { filename: options?.filename, indentExclusionRanges: options?.indentExclusionRanges })
+    this.parse()
   }
 
   public parse(): void { /* Parse has no effect here as this class is built to be extended. */ }

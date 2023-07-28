@@ -1,31 +1,36 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'vue/compiler-sfc'
 import { createVueSFC as create } from '../src/vue/create'
-import { defaults } from '../src/vue/sfc'
+import { magicVueSfcDefaultOptions } from '../src/vue/sfc'
 
 describe('Create Vue SFC', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    defaults.parser = parse
+    magicVueSfcDefaultOptions.parser = parse
   })
 
   it('Can create an SFC with template, script, scriptSetup, and styles', () => {
     const sfc = create({
-      template: {
+      templates: [{
         content: '<div>{{ msg }}</div>',
-      },
-      script: {
-        content: `export default {
+      }],
+      scripts: [
+        {
+          content: `export default {
   data() {
     return {
       msg: "Hello, world!",
     };
   },
 };`,
-      },
-      scriptSetup: {
-        content: 'const setupMsg = \'Hello from setup!\';',
-      },
+        },
+        {
+          content: 'const setupMsg = \'Hello from setup!\';',
+          attrs: {
+            setup: true,
+          },
+        },
+      ],
       styles: [
         {
           content: `.text {
@@ -62,10 +67,10 @@ const setupMsg = 'Hello from setup!';
 
   it('Can create an SFC with custom blocks', () => {
     const sfc = create({
-      template: {
+      templates: [{
         content: '<div>{{ msg }}</div>',
-      },
-      script: {
+      }],
+      scripts: [{
         content: `export default {
   data() {
     return {
@@ -73,8 +78,8 @@ const setupMsg = 'Hello from setup!';
     };
   },
 };`,
-      },
-      customBlocks: [
+      }],
+      customs: [
         {
           type: 'docs',
           content: 'This is a custom block with documentation.',
@@ -104,13 +109,13 @@ This is a custom block with documentation.
 
   it('Can create an SFC with attributes, lang, and src', () => {
     const sfc = create({
-      template: {
+      templates: [{
         content: '<div>{{ msg }}</div>',
-      },
-      script: {
+      }],
+      scripts: [{
         lang: 'ts',
         src: './script.ts',
-      },
+      }],
       styles: [
         {
           scoped: true,

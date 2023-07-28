@@ -9,58 +9,53 @@ type VueParseFunction = (source: string, { sourceMap, filename, sourceRoot, pad,
 
 export interface MagicVueSFCOptions extends MagicSFCOptions {
   parser?: VueParseFunction
-  silent?: boolean
   parserOptions?: SFCParseOptions
+  silent?: boolean
 }
 
-export const defaults: MagicVueSFCOptions = {
+export const magicVueSfcDefaultOptions: MagicVueSFCOptions = {
   parser: undefined,
   silent: false,
   parserOptions: undefined,
 }
 
 export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> extends MagicSFC<T> {
-  public parser?: VueParseFunction
-  public silent?: boolean
-  public sfc?: SFCParseResult
-  public template?: MagicBlock<SFCTemplateBlock>
-  public script?: MagicBlock<SFCScriptBlock>
-  public scriptSetup?: MagicBlock<SFCScriptBlock>
-  public customBlocks?: MagicBlock<SFCBlock>[]
-  public styles?: MagicBlock<SFCStyleBlock>[]
+  public options: MagicVueSFCOptions = magicVueSfcDefaultOptions
+  declare public parsed?: SFCParseResult
+  declare public templates: MagicBlock<SFCTemplateBlock>[]
+  declare public scripts: MagicBlock<SFCScriptBlock | SFCBlock>[]
+  declare public styles: MagicBlock<SFCStyleBlock>[]
 
   constructor(
     source: string | MagicString,
     options?: T,
   ) {
-    super(source, options || defaults as T)
-
-    if (this?.options?.parser) { this.parser = this.options.parser }
-    else { this.parser = defaults.parser }
-
-    this.parse()
+    super(
+      source,
+      { ...magicVueSfcDefaultOptions, ...options } as T,
+    )
   }
 
   public parse(): void {
-    if (!this?.parser) {
+    if (!this?.options?.parser) {
       if (!this?.options?.silent) { throw new Error('You must provide a `parser` function (from vue/compiler-sfc) in options when using MagicVueSFC.') }
       return
     }
 
-    const parsedSfc = this?.parser(this.ms.toString(), this.options?.parserOptions)
+    const parsedSfc = this?.options?.parser(this.ms.toString(), this.options?.parserOptions)
 
     if (!parsedSfc) { return }
 
-    this.sfc = parsedSfc
+    this.parsed = parsedSfc
 
-    if (parsedSfc.descriptor?.template) { this.template = proxyBlock(this, parsedSfc.descriptor.template) }
+    if (parsedSfc.descriptor?.template) { this.templates.push(proxyBlock(this, parsedSfc.descriptor.template)) }
 
-    if (parsedSfc.descriptor?.script) { this.script = proxyBlock(this, parsedSfc.descriptor.script) }
+    if (parsedSfc.descriptor?.script) { this.scripts.push(proxyBlock(this, parsedSfc.descriptor.script)) }
 
-    if (parsedSfc.descriptor?.scriptSetup) { this.scriptSetup = proxyBlock(this, parsedSfc.descriptor.scriptSetup) }
+    if (parsedSfc.descriptor?.scriptSetup) { this.scripts.push(proxyBlock(this, parsedSfc.descriptor.scriptSetup)) }
 
-    if (parsedSfc.descriptor?.styles) { this.styles = parsedSfc.descriptor?.styles.map(styleBlock => proxyBlock(this, styleBlock)) }
+    if (parsedSfc.descriptor?.styles) { parsedSfc.descriptor?.styles.forEach(styleBlock => this.styles.push(proxyBlock(this, styleBlock))) }
 
-    if (parsedSfc.descriptor?.customBlocks) { this.customBlocks = parsedSfc.descriptor?.customBlocks.map(block => proxyBlock(this, block)) }
+    if (parsedSfc.descriptor?.customBlocks) { parsedSfc.descriptor?.customBlocks.forEach(block => this.customs.push(proxyBlock(this, block))) }
   }
 }

@@ -1,7 +1,7 @@
 import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'vue/compiler-sfc'
-import { MagicVueSFC, defaults } from '../src/vue/sfc'
+import { MagicVueSFC, magicVueSfcDefaultOptions } from '../src/vue/sfc'
 
 const script = '<script>let baseScript: string</script>'
 const scriptSetup = '<script setup>let scriptSetup: string</script>'
@@ -19,7 +19,7 @@ const completeComponent = `
 describe('Magic Vue SFC', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    defaults.parser = parse
+    magicVueSfcDefaultOptions.parser = parse
   })
 
   it('Can create the class', () => {
@@ -29,7 +29,7 @@ describe('Magic Vue SFC', () => {
   })
 
   it('Cannot create a Magic Vue SFC without a parser function', () => {
-    defaults.parser = undefined
+    magicVueSfcDefaultOptions.parser = undefined
 
     expect(
       () => new MagicVueSFC(scriptSetup),
@@ -45,7 +45,7 @@ describe('Magic Vue SFC', () => {
 
     const appended = '\nlet secondTest: string'
 
-    sfc.scriptSetup.append(appended)
+    sfc.scripts[0].append(appended)
 
     expect(sfc.toString()).toBe(`<script setup>let scriptSetup: string${appended}</script>`)
   })
@@ -58,17 +58,17 @@ describe('Magic Vue SFC', () => {
 
   it('Can parse a <script> tag', () => {
     const sfc = new MagicVueSFC(script)
-    expect(sfc.script).toBeInstanceOf(Object)
+    expect(sfc.scripts[0]).toBeInstanceOf(Object)
   })
 
   it('Can parse a <script setup> tag', () => {
     const sfc = new MagicVueSFC(scriptSetup)
-    expect(sfc.scriptSetup).toBeInstanceOf(Object)
+    expect(sfc.scripts[0]).toBeInstanceOf(Object)
   })
 
   it('Can parse a <template> tag', () => {
     const sfc = new MagicVueSFC(template)
-    expect(sfc.template).toBeInstanceOf(Object)
+    expect(sfc.templates[0]).toBeInstanceOf(Object)
   })
 
   it('Can parse a <style> tag', () => {
@@ -84,42 +84,42 @@ describe('Magic Vue SFC', () => {
 
   it('Can parse a complete component', () => {
     const sfc = new MagicVueSFC(completeComponent)
-    expect(sfc.script).toBeInstanceOf(Object)
-    expect(sfc.scriptSetup).toBeInstanceOf(Object)
+    expect(sfc.scripts[0]).toBeInstanceOf(Object)
+    expect(sfc.scripts[1]).toBeInstanceOf(Object)
     expect(sfc.styles[0]).toBeInstanceOf(Object)
     expect(sfc.styles[1]).toBeInstanceOf(Object)
-    expect(sfc.template).toBeInstanceOf(Object)
+    expect(sfc.templates[0]).toBeInstanceOf(Object)
   })
 
   it('Can transform SFCBlock into MagicBlock<SFCBlock>', () => {
     const sfc = new MagicVueSFC(completeComponent)
-    sfc.scriptSetup.append('test')
-    sfc.scriptSetup.append('\nnew-test')
-    expect(sfc.scriptSetup.toString()).toEqual('let scriptSetup: stringtest\nnew-test')
+    sfc.scripts[1].append('test')
+    sfc.scripts[1].append('\nnew-test')
+    expect(sfc.scripts[1].toString()).toEqual('let scriptSetup: stringtest\nnew-test')
     expect(sfc.toString()).toEqual(completeComponent.replace('let scriptSetup: string', 'let scriptSetup: stringtest\nnew-test'))
   })
 
   it('Can parse a custom block', () => {
     const customBlock = '<custom>\n  Some custom content\n</custom>'
     const sfc = new MagicVueSFC(customBlock)
-    expect(sfc.customBlocks).toHaveLength(1)
-    expect(sfc.customBlocks[0]).toBeInstanceOf(Object)
+    expect(sfc.customs).toHaveLength(1)
+    expect(sfc.customs[0]).toBeInstanceOf(Object)
   })
 
   it('Can parse multiple custom blocks', () => {
     const customBlock1 = '<custom1>\n  Some custom content\n</custom1>'
     const customBlock2 = '<custom2>\n  Some other custom content\n</custom2>'
     const sfc = new MagicVueSFC(`${customBlock1}\n${customBlock2}`)
-    expect(sfc.customBlocks).toHaveLength(2)
-    expect(sfc.customBlocks[0]).toBeInstanceOf(Object)
-    expect(sfc.customBlocks[1]).toBeInstanceOf(Object)
+    expect(sfc.customs).toHaveLength(2)
+    expect(sfc.customs[0]).toBeInstanceOf(Object)
+    expect(sfc.customs[1]).toBeInstanceOf(Object)
   })
 
   it('Can manipulate a <script> block', () => {
     const originalScript = '<script>\nexport default {\n  name: "MyComponent",\n};\n</script>'
     const expectedScript = '<script>\nexport default {\n  name: "UpdatedComponent",\n};\n</script>'
     const sfc = new MagicVueSFC(originalScript)
-    sfc.script.overwrite(27, 38, 'UpdatedComponent')
+    sfc.scripts[0].overwrite(27, 38, 'UpdatedComponent')
     expect(sfc.toString()).toBe(expectedScript)
   })
 
@@ -127,7 +127,7 @@ describe('Magic Vue SFC', () => {
     const originalScriptSetup = '<script setup>\nconst msg = "Hello, world!";\n</script>'
     const expectedScriptSetup = '<script setup>\nconst msg = "Hello, Mars!";\n</script>'
     const sfc = new MagicVueSFC(originalScriptSetup)
-    sfc.scriptSetup.overwrite(21, 26, 'Mars')
+    sfc.scripts[0].overwrite(21, 26, 'Mars')
     expect(sfc.toString()).toBe(expectedScriptSetup)
   })
 
@@ -143,7 +143,7 @@ describe('Magic Vue SFC', () => {
     const originalNestedTemplate = '<template>\n  <div><span>Hello, world!</span></div>\n</template>'
     const expectedNestedTemplate = '<template>\n  <div><span>Hello, Mars!</span></div>\n</template>'
     const sfc = new MagicVueSFC(originalNestedTemplate)
-    sfc.template.overwrite(21, 26, 'Mars')
+    sfc.templates[0].overwrite(21, 26, 'Mars')
     expect(sfc.toString()).toBe(expectedNestedTemplate)
   })
 
@@ -155,12 +155,11 @@ describe('Magic Vue SFC', () => {
     const sfc = new MagicVueSFC(`${emptyScriptSetup}\n${emptyScript}\n${emptyTemplate}\n${emptyStyle}`)
 
     // Vue SFC parser does sets null for empty script blocks
-    expect(sfc.scriptSetup).toBeFalsy()
-    expect(sfc.script).toBeFalsy()
+    expect(sfc.scripts.length).toBeFalsy()
     expect(sfc.styles.length).toBeFalsy()
 
     // Vue SFC parser does detect <template>
-    expect(sfc.template).toBeTruthy()
+    expect(sfc.templates.length).toBeTruthy()
   })
 
   it('Can append content to a <script> block', () => {
@@ -169,7 +168,7 @@ describe('Magic Vue SFC', () => {
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${appended}</script>`
     const sfc = new MagicVueSFC(originalScript)
-    sfc.script.append(appended)
+    sfc.scripts[0].append(appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
 
@@ -179,7 +178,7 @@ describe('Magic Vue SFC', () => {
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${appended}${baseContent}</script>`
     const sfc = new MagicVueSFC(originalScript)
-    sfc.script.appendLeft(0, appended)
+    sfc.scripts[0].appendLeft(0, appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
 
@@ -189,7 +188,7 @@ describe('Magic Vue SFC', () => {
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${appended}</script>`
     const sfc = new MagicVueSFC(originalScript)
-    sfc.script.appendRight(baseContent.length, appended)
+    sfc.scripts[0].appendRight(baseContent.length, appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
 
@@ -199,7 +198,7 @@ describe('Magic Vue SFC', () => {
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${prepended}${baseContent}</script>`
     const sfc = new MagicVueSFC(originalScript)
-    sfc.script.prepend(prepended)
+    sfc.scripts[0].prepend(prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
 
@@ -209,7 +208,7 @@ describe('Magic Vue SFC', () => {
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${prepended}${baseContent}</script>`
     const sfc = new MagicVueSFC(originalScript)
-    sfc.script.prependLeft(0, prepended)
+    sfc.scripts[0].prependLeft(0, prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
 
@@ -219,7 +218,7 @@ describe('Magic Vue SFC', () => {
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${prepended}</script>`
     const sfc = new MagicVueSFC(originalScript)
-    sfc.script.prependRight(baseContent.length, prepended)
+    sfc.scripts[0].prependRight(baseContent.length, prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
 
@@ -277,9 +276,9 @@ const setupMsg = 'Hello from updated setup!';
 `
 
     const sfc = new MagicVueSFC(originalSFC)
-    sfc.template.overwrite(11, 14, 'updatedMsg')
-    sfc.script.overwrite(61, 66, 'Mars')
-    sfc.scriptSetup.appendLeft(29, ' updated')
+    sfc.templates[0].overwrite(11, 14, 'updatedMsg')
+    sfc.scripts[0].overwrite(61, 66, 'Mars')
+    sfc.scripts[1].appendLeft(29, ' updated')
     sfc.styles[0].overwrite(18, 21, 'blue')
 
     expect(sfc.toString()).toBe(expectedSFC)
@@ -333,13 +332,13 @@ console.log('Appended!');
     const sfc = new MagicVueSFC(originalSFC)
 
     // Manipulate <template> block
-    sfc.template.prepend('\n  <span>Hi, Mars!</span>')
+    sfc.templates[0].prepend('\n  <span>Hi, Mars!</span>')
 
     // Manipulate <script> block
-    sfc.script.prepend('\nconsole.log(\'Prepended!\');')
-    sfc.script.append('console.log(\'Appended!\');\n')
-    sfc.script.overwrite(27, 38, 'UpdatedComponent')
-    sfc.script.appendRight(40, '\n  data() {\n    return {\n      message: \'Appended!\',\n    };\n  }')
+    sfc.scripts[0].prepend('\nconsole.log(\'Prepended!\');')
+    sfc.scripts[0].append('console.log(\'Appended!\');\n')
+    sfc.scripts[0].overwrite(27, 38, 'UpdatedComponent')
+    sfc.scripts[0].appendRight(40, '\n  data() {\n    return {\n      message: \'Appended!\',\n    };\n  }')
 
     // Manipulate <style> block
     sfc.styles[0].overwrite(18, 21, 'blue')
