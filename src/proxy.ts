@@ -1,50 +1,50 @@
 import type MagicString from 'magic-string'
-import type { MagicSFC, SourceLocation } from './magic-sfc'
+import type { SourceLocation } from './magic-sfc'
 
-export type MagicBlock<T extends { loc: SourceLocation } & object> = T & MagicString
+export type MagicBlock<T extends { loc: SourceLocation }> = T & MagicString
 
-export function proxyBlock<T extends { loc: any } & object>(
-  sfc: MagicSFC,
+export function proxyBlock<T extends { loc: SourceLocation }>(
+  source: MagicString,
   block: T,
   handler: ProxyHandler<object> = {},
 ): MagicBlock<T> {
   const { start: blockStart, end: blockEnd } = block?.loc || {}
 
   // Recreate a local Magic String from the block content.
-  const ms: MagicString = sfc.ms.snip(blockStart.offset, blockEnd.offset)
+  const snip: MagicString = source.snip(blockStart.offset, blockEnd.offset)
 
   const proxified: { [K in keyof MagicString]?: MagicString[K] } = {
     append: (content: string) => {
-      sfc.ms.appendRight(blockEnd.offset, content)
-      return ms.append(content)
+      source.appendRight(blockEnd.offset, content)
+      return snip.append(content)
     },
     appendLeft: (index: number, content: string) => {
-      sfc.ms.appendLeft(blockStart.offset + index, content)
-      return ms.appendLeft(index, content)
+      source.appendLeft(blockStart.offset + index, content)
+      return snip.appendLeft(index, content)
     },
     appendRight: (index: number, content: string) => {
-      sfc.ms.appendRight(blockStart.offset + index, content)
-      return ms.appendRight(index, content)
+      source.appendRight(blockStart.offset + index, content)
+      return snip.appendRight(index, content)
     },
     prepend: (content: string) => {
-      sfc.ms.prependRight(blockStart.offset, content)
-      return ms.prepend(content)
+      source.prependRight(blockStart.offset, content)
+      return snip.prepend(content)
     },
     prependLeft: (index: number, content: string) => {
-      sfc.ms.prependLeft(blockStart.offset + index, content)
-      return ms.prependLeft(index, content)
+      source.prependLeft(blockStart.offset + index, content)
+      return snip.prependLeft(index, content)
     },
     prependRight: (index: number, content: string) => {
-      sfc.ms.prependRight(blockStart.offset + index, content)
-      return ms.prependRight(index, content)
+      source.prependRight(blockStart.offset + index, content)
+      return snip.prependRight(index, content)
     },
     overwrite: (start: number, end: number, replacement: string, options?: { storeName?: boolean; contentOnly?: boolean }) => {
-      sfc.ms.overwrite(blockStart.offset + start, blockStart.offset + end, replacement, options)
-      return ms.overwrite(start, end, replacement, options)
+      source.overwrite(blockStart.offset + start, blockStart.offset + end, replacement, options)
+      return snip.overwrite(start, end, replacement, options)
     },
     remove: (start: number, end: number) => {
-      sfc.ms.remove(blockStart.offset + start, blockStart.offset + end)
-      return ms.remove(start, end)
+      source.remove(blockStart.offset + start, blockStart.offset + end)
+      return snip.remove(start, end)
     },
   }
 
@@ -53,10 +53,11 @@ export function proxyBlock<T extends { loc: any } & object>(
     {
       ...handler,
       get(target: T, key: string | symbol, receiver: any) {
-        if (key === 'ms') { return ms }
-        if (key in ms) {
+        if (key === 'source') { return source }
+        if (key === 'snip') { return snip }
+        if (key in snip) {
           if (Object.hasOwn(proxified, key)) { return (proxified as any)[key] }
-          return ms[key as unknown as keyof MagicString]
+          return snip[key as unknown as keyof MagicString]
         }
         if (handler.get) { return handler.get(target, key, receiver) }
       },

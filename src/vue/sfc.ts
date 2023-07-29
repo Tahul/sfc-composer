@@ -48,14 +48,14 @@ export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> exte
 
     this.parsed = parsedSfc
 
-    if (parsedSfc.descriptor?.template) { this.templates.push(proxyBlock(this, parsedSfc.descriptor.template)) }
+    if (parsedSfc.descriptor?.template) { this.templates.push(proxyBlock(this.ms, parsedSfc.descriptor.template)) }
 
-    if (parsedSfc.descriptor?.script) { this.scripts.push(proxyBlock(this, parsedSfc.descriptor.script)) }
+    if (parsedSfc.descriptor?.script) { this.scripts.push(proxyBlock(this.ms, parsedSfc.descriptor.script)) }
 
-    if (parsedSfc.descriptor?.scriptSetup) { this.scripts.push(proxyBlock(this, parsedSfc.descriptor.scriptSetup)) }
+    if (parsedSfc.descriptor?.scriptSetup) { this.scripts.push(proxyBlock(this.ms, parsedSfc.descriptor.scriptSetup)) }
 
-    if (parsedSfc.descriptor?.styles) { parsedSfc.descriptor?.styles.forEach(styleBlock => this.styles.push(proxyBlock(this, styleBlock))) }
+    if (parsedSfc.descriptor?.styles) { parsedSfc.descriptor?.styles.forEach(styleBlock => this.styles.push(proxyBlock(this.ms, styleBlock))) }
 
-    if (parsedSfc.descriptor?.customBlocks) { parsedSfc.descriptor?.customBlocks.forEach(block => this.customs.push(proxyBlock(this, block))) }
+    if (parsedSfc.descriptor?.customBlocks) { parsedSfc.descriptor?.customBlocks.forEach(block => this.customs.push(proxyBlock(this.ms, block))) }
   }
 }

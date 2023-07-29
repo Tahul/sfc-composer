@@ -53,13 +53,13 @@ export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
 }
 
 export interface Position {
-  offset?: number
-  line?: number
-  column?: number
+  offset: number
+  line: number
+  column: number
 }
 
 export interface SourceLocation {
-  start?: Position
-  end?: Position
-  source?: string
+  start: Position
+  end: Position
+  source: string
 }
