@@ -1,6 +1,6 @@
 import MagicString, { SourceMap } from 'magic-string'
 import { describe, expect, it } from 'vitest'
-import { MagicSFC } from '../src'
+import { MagicSFC, createSourceLocation, proxyBlock } from '../src'
 
 describe('Magic SFC', () => {
   it('Can create the class', () => {
@@ -21,5 +21,23 @@ describe('Magic SFC', () => {
     const sfc = new MagicSFC('<script setup>let test: string</script>')
 
     expect(sfc.getSourcemap()).toBeInstanceOf(SourceMap)
+  })
+
+  it('Can access custom properties from proxified block', () => {
+    const source = '<script setup>let test: string</script>'
+
+    const block = proxyBlock(
+      new MagicString(source),
+      {
+        loc: createSourceLocation(source),
+        type: 'style',
+        lang: 'postcss',
+        attrs: {
+          lang: 'postcss',
+        },
+      },
+    )
+
+    expect(block.type).toBe('style')
   })
 })

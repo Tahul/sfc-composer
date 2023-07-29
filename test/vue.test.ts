@@ -2,19 +2,7 @@ import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'vue/compiler-sfc'
 import { MagicVueSFC, magicVueSfcDefaultOptions } from '../src/vue/sfc'
-
-const script = '<script>let baseScript: string</script>'
-const scriptSetup = '<script setup>let scriptSetup: string</script>'
-const template = '<template><div>Hello World!</div></template>'
-const style = '<style>div { color: blue; }</style>'
-const styleScoped = '<style scoped>.scoped { color: blue; }</style>'
-const completeComponent = `
-  ${script}
-  ${scriptSetup}
-  ${template}
-  ${style}
-  ${styleScoped}
-`
+import { completeComponent, script, scriptSetup, style, styleScoped, template } from './utils'
 
 describe('Magic Vue SFC', () => {
   beforeEach(() => {

@@ -1,8 +1,9 @@
 import type MagicString from 'magic-string'
 import type { SourceLocation } from './magic-sfc'
+import { createSourceLocation } from './loc'
 
 export interface MagicBlockBase {
-  loc: SourceLocation
+  loc?: SourceLocation
   [key: string]: any
 }
 
@@ -10,10 +11,10 @@ export type MagicBlock<T extends MagicBlockBase = MagicBlockBase> = T & MagicStr
 
 export function proxyBlock<T extends MagicBlockBase = MagicBlockBase>(
   source: MagicString,
-  block: T,
+  block?: T,
   handler: ProxyHandler<object> = {},
 ): MagicBlock<T> {
-  const { start: blockStart, end: blockEnd } = block?.loc || {}
+  const { start: blockStart, end: blockEnd } = block?.loc || createSourceLocation(source.toString())
 
   // Recreate a local Magic String from the block content.
   const snip: MagicString = source.snip(blockStart.offset, blockEnd.offset)
@@ -54,21 +55,31 @@ export function proxyBlock<T extends MagicBlockBase = MagicBlockBase>(
   }
 
   return new Proxy(
-    block,
+    block || {},
     {
       ...handler,
       get(target: T, key: string | symbol, receiver: any) {
-        if (key === 'source') { return source }
-        if (key === 'snip') { return snip }
+        if (key === 'source') {
+          return source
+        }
         if (key in snip) {
           if (Object.hasOwn(proxified, key)) { return (proxified as any)[key] }
           return snip[key as unknown as keyof MagicString]
         }
-        if (handler.get) { return handler.get(target, key, receiver) }
+        if (block && key in block) {
+          return block[key as any]
+        }
+        if (handler.get) {
+          return handler.get(target, key, receiver)
+        }
       },
       set(target: T, key: string | symbol, value: any, receiver: any) {
         if (key in proxified) {
           (proxified as any)[key] = value
+          return true
+        }
+        if (block && key in block) {
+          (block as any)[key] = value
           return true
         }
         if (handler.set) { return handler.set(target, key, value, receiver) }
