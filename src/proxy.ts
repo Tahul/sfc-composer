@@ -1,9 +1,14 @@
 import type MagicString from 'magic-string'
 import type { SourceLocation } from './magic-sfc'
 
-export type MagicBlock<T extends { loc: SourceLocation }> = T & MagicString
+export interface MagicBlockBase {
+  loc: SourceLocation
+  [key: string]: any
+}
 
-export function proxyBlock<T extends { loc: SourceLocation }>(
+export type MagicBlock<T extends MagicBlockBase = MagicBlockBase> = T & MagicString
+
+export function proxyBlock<T extends MagicBlockBase = MagicBlockBase>(
   source: MagicString,
   block: T,
   handler: ProxyHandler<object> = {},
