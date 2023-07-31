@@ -1,5 +1,5 @@
 import type MagicString from 'magic-string'
-import type { SourceLocation } from './magic-sfc'
+import type { SourceLocation } from './loc'
 import { createSourceLocation } from './loc'
 
 export interface MagicBlockBase {

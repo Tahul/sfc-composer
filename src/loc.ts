@@ -1,4 +1,11 @@
+/**
+ * Count lines in a string.
+ */
 export function countLines(source: string) { return (source.match(/\n/g) || []).length }
+
+/**
+ * Find the length of last line of a string.
+ */
 export function lastLineLength(source: string) { return source.substring(source.lastIndexOf('\n')).length }
 
 /**
@@ -38,12 +45,12 @@ export function findAllSourceLocations(source: string, search: string) {
 
     const endOffset = index + search.length
 
-    // calculate line and column for start position
+    // Start position
     const preStartStr = source.substring(0, index)
     const startLine = (preStartStr.match(/\n/g) || []).length
     const startColumn = preStartStr.substring(preStartStr.lastIndexOf('\n')).length
 
-    // calculate line and column for end position
+    // End position
     const preEndStr = source.substring(0, endOffset)
     const endLine = (preEndStr.match(/\n/g) || []).length
     const endColumn = preEndStr.substring(preEndStr.lastIndexOf('\n')).length
@@ -62,7 +69,7 @@ export function findAllSourceLocations(source: string, search: string) {
       source: search,
     })
 
-    // move startOffset to after the found occurrence
+    // Find next occurences
     startOffset = endOffset
   }
 
@@ -74,7 +81,7 @@ export function findAllSourceLocations(source: string, search: string) {
  */
 export function createSourceLocationFromOffsets(source: string, start: number, end: number) {
   if (start > end || start < 0 || end > source.length) {
-    throw new Error('Invalid start or end offsets')
+    throw new Error('Invalid start or end offsets.')
   }
 
   // calculate line and column for start position
@@ -100,4 +107,22 @@ export function createSourceLocationFromOffsets(source: string, start: number, e
     },
     source: source.substring(start, end),
   }
+}
+
+/**
+ * Position of a caret in a string.
+ */
+export interface Position {
+  offset: number
+  line: number
+  column: number
+}
+
+/**
+ * Position of a string in a source.
+ */
+export interface SourceLocation {
+  source: string
+  start: Position
+  end: Position
 }

@@ -51,15 +51,3 @@ export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
 
   public getTransformResult(): TransformResult { return { code: this.toString(), map: this.getSourcemap() } }
 }
-
-export interface Position {
-  offset: number
-  line: number
-  column: number
-}
-
-export interface SourceLocation {
-  start: Position
-  end: Position
-  source: string
-}
