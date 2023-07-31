@@ -1,17 +1,17 @@
 /**
  * Count lines in a string.
  */
-export function countLines(source: string) { return (source.match(/\n/g) || []).length }
+export function countLines(source: string): number { return (source.match(/\n/g) || []).length }
 
 /**
  * Find the length of last line of a string.
  */
-export function lastLineLength(source: string) { return source.substring(source.lastIndexOf('\n')).length }
+export function lastLineLength(source: string): number { return source.substring(source.lastIndexOf('\n')).length }
 
 /**
  * Creates a SourceLocation from a string.
  */
-export function createSourceLocation(source: string) {
+export function createSourceLocation(source: string): SourceLocation {
   const endLine = countLines(source)
   const endColumn = lastLineLength(source)
 
@@ -33,7 +33,7 @@ export function createSourceLocation(source: string) {
 /**
  * Finds a SourceLocation array from a string to search in a source.
  */
-export function findAllSourceLocations(source: string, search: string) {
+export function findAllSourceLocations(source: string, search: string): SourceLocation[] {
   const locations = []
   let startOffset = 0
 
@@ -73,13 +73,13 @@ export function findAllSourceLocations(source: string, search: string) {
     startOffset = endOffset
   }
 
-  return locations.length > 0 ? locations : null
+  return locations
 }
 
 /**
  * Creates a SourceLocation from two string offset integers.
  */
-export function createSourceLocationFromOffsets(source: string, start: number, end: number) {
+export function createSourceLocationFromOffsets(source: string, start: number, end: number): SourceLocation {
   if (start > end || start < 0 || end > source.length) {
     throw new Error('Invalid start or end offsets.')
   }
