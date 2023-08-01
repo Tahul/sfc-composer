@@ -1,4 +1,4 @@
-import type MagicString from 'magic-string'
+import MagicString from 'magic-string'
 import type { SourceLocation } from './loc'
 import { createSourceLocation } from './loc'
 
@@ -16,8 +16,11 @@ export function proxyBlock<T extends MagicBlockBase = MagicBlockBase>(
 ): MagicBlock<T> {
   const { start: blockStart, end: blockEnd } = block?.loc || createSourceLocation(source.toString())
 
+  // Grab content from source
+  const content = source.toString().substring(blockStart.offset, blockEnd.offset)
+
   // Recreate a local Magic String from the block content.
-  const snip: MagicString = source.snip(blockStart.offset, blockEnd.offset)
+  const snip: MagicString = new MagicString(content)
 
   const proxified: { [K in keyof MagicString]?: MagicString[K] } = {
     append: (content: string) => {
