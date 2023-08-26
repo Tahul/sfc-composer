@@ -52,7 +52,7 @@
     "vitest": "^0.34.3",
     "vue": "^3.3.4"
   },
-  "packageManager": "pnpm@7.28.0",
+  "packageManager": "pnpm@8.6.12",
   "release-it": {
     "hooks": {
       "before:init": [
