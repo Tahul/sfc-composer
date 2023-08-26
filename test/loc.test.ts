@@ -41,6 +41,10 @@ describe('LOC Helpers', () => {
     })
   })
 
+  it('Should throw when creating SourceLocation from malformed offsets', () => {
+    expect(() => createSourceLocationFromOffsets(completeComponent, 25, 22)).toThrow()
+  })
+
   it('Can create a SourceLocation from a string and two offsets', () => {
     const scriptLocation = createSourceLocationFromOffsets(completeComponent, 0, script.length)
 
