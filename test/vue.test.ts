@@ -2,6 +2,7 @@ import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'vue/compiler-sfc'
 import { MagicVueSFC, magicVueSfcDefaultOptions } from '../src/vue/sfc'
+import { createVueBlock, createVueSFC } from '../src'
 import { completeComponent, script, scriptSetup, style, styleScoped, template } from './utils'
 
 describe('Magic Vue SFC', () => {
@@ -333,5 +334,57 @@ console.log('Appended!');
     sfc.styles[0].appendRight(22, '\n  font-size: 16px;')
 
     expect(sfc.toString()).toBe(expectedSFC)
+  })
+})
+
+describe('createVueBlock', () => {
+  it('should return an empty string if no block is provided', () => {
+    const result = createVueBlock(undefined, 'templates')
+    expect(result).toBe('')
+  })
+
+  it('should set custom block name from block.type if available', () => {
+    const block = {
+      type: 'my-custom-block',
+      content: 'Some content',
+    }
+    const result = createVueBlock(block, 'customs')
+    expect(result).toContain('<my-custom-block>')
+
+    const blockWithNoType = {
+      content: 'Some content',
+    }
+    const resultWithNoType = createVueBlock(blockWithNoType, 'customs')
+    expect(resultWithNoType).toContain('<custom>')
+  })
+
+  it('should set custom block name from block.attrs.type if block.type is not available', () => {
+    const block = {
+      attrs: { type: 'my-custom-attr-block' },
+      content: 'Some content',
+    }
+    const result = createVueBlock(block, 'customs')
+    expect(result).toContain('<my-custom-attr-block')
+  })
+
+  it('should handle missing block.attrs gracefully', () => {
+    const block = {
+      content: '<div>Hello</div>',
+    }
+    const result = createVueBlock(block, 'templates')
+    // Ensure that the block creation works without errors and the content is present
+    expect(result).toBe('<template>\n<div>Hello</div>\n</template>\n')
+  })
+
+  it('should handle missing templates option gracefully', () => {
+    const options = {
+      scripts: [{ content: 'console.log("Hello");' }],
+    }
+    const result = createVueSFC(options)
+    const sfcContent = result.toString() // Assuming toString method exists
+
+    // Assert there is no <template> block but the <script> block exists
+    expect(sfcContent).not.toContain('<template>')
+    expect(sfcContent).toContain('<script>\nconsole.log("Hello");\n</script>')
   })
 })

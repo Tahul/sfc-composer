@@ -40,7 +40,7 @@ export function createVueBlock(
     // Filter out `setup` as it's used separately
     .filter(([key]) => key !== 'setup')
     // Map attributes
-    .map(([key, value]) => (value === true ? key : `${key}="${value}"`))
+    .map(([key, value]) => (value === true ? key : ` ${key}="${value}"`))
     .join(' ')
 
   // Specific attributes

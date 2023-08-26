@@ -37,12 +37,17 @@ export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> exte
   }
 
   public parse(): void {
-    if (!this?.options?.parser) {
-      if (!this?.options?.silent) { throw new Error('You must provide a `parser` function (from vue/compiler-sfc) in options when using MagicVueSFC.') }
+    const {
+      parser,
+      silent = true,
+    } = this.options
+
+    if (!parser) {
+      if (!silent) { throw new Error('You must provide a `parser` function (from vue/compiler-sfc) in options when using MagicVueSFC.') }
       return
     }
 
-    const parsedSfc = this?.options?.parser(this.ms.toString(), this.options?.parserOptions)
+    const parsedSfc = parser(this.ms.toString(), this.options?.parserOptions)
 
     if (!parsedSfc) { return }
 
