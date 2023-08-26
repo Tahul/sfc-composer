@@ -69,7 +69,7 @@ export function proxyBlock<T extends MagicBlockBase = MagicBlockBase>(
           if (Object.hasOwn(proxified, key)) { return (proxified as any)[key] }
           return snip[key as unknown as keyof MagicString]
         }
-        if (block && key in block) {
+        if (block && key in block && !handler.get) {
           return block[key as any]
         }
         if (handler.get) {
@@ -81,11 +81,14 @@ export function proxyBlock<T extends MagicBlockBase = MagicBlockBase>(
           (proxified as any)[key] = value
           return true
         }
-        if (block && key in block) {
+        if (block && !handler.set) {
           (block as any)[key] = value
           return true
         }
-        if (handler.set) { return handler.set(target, key, value, receiver) }
+        if (handler.set) {
+          return handler.set(target, key, value, receiver)
+        }
+        /* c8 ignore next */
         return false
       },
     },
