@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import '@unocss/reset/normalize.css'
+import '@unocss/reset/tailwind.css'
 import './style.css'
 import 'monaco-editor-core'
 import 'monaco-volar'

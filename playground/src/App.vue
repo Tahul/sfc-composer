@@ -47,19 +47,19 @@ function handleSourceMounted(e: monaco.editor.IStandaloneDiffEditor) {
   sourceEditor.value = e
 }
 
-let decorations: monaco.editor.IEditorDecorationsCollection | undefined
+let selectionDecorations: monaco.editor.IEditorDecorationsCollection | undefined
 
 function handleBlockSelection(newSel: any) {
-  if (decorations) {
-    decorations.clear()
-    decorations = undefined
+  if (selectionDecorations) {
+    selectionDecorations.clear()
+    selectionDecorations = undefined
   }
 
   const { sourceStart, sourceEnd } = newSel
   const { line: startLine, col: startColumn } = lineColumn(sfc.value.toString()).fromIndex(sourceStart)!
   const { line: endLine, col: endColumn } = lineColumn(sfc.value.toString()).fromIndex(sourceEnd)!
 
-  decorations = sourceEditor.value?.getOriginalEditor().createDecorationsCollection([
+  selectionDecorations = sourceEditor.value?.getOriginalEditor().createDecorationsCollection([
     {
       range: new monaco.Range(
         startLine,
@@ -82,6 +82,41 @@ function handleBlockSelection(newSel: any) {
     },
   ])
 }
+
+let cursorDecorations: monaco.editor.IEditorDecorationsCollection | undefined
+
+function handleCursor(newCursor: any) {
+  if (cursorDecorations) {
+    cursorDecorations.clear()
+    cursorDecorations = undefined
+  }
+
+  const { sourceOffset } = newCursor
+  const { line: startLine, col: startColumn } = lineColumn(sfc.value.toString()).fromIndex(sourceOffset)!
+
+  cursorDecorations = sourceEditor.value?.getOriginalEditor().createDecorationsCollection([
+    {
+      range: new monaco.Range(
+        startLine,
+        startColumn,
+        startLine,
+        startColumn + 1,
+      ),
+      options: {
+        inlineClassName: 'cursor-line',
+      },
+    },
+    {
+      range: new monaco.Range(
+        startLine,
+        startColumn,
+        startLine,
+        startColumn + 1,
+      ),
+      options: { inlineClassName: 'cursor-range' },
+    },
+  ])
+}
 </script>
 
 <template>
@@ -101,6 +136,7 @@ function handleBlockSelection(newSel: any) {
           :index="index"
           @parse="update"
           @select="handleBlockSelection"
+          @cursor="handleCursor"
         />
         <EditBlock
           v-for="(_, index) of scripts"
@@ -111,6 +147,7 @@ function handleBlockSelection(newSel: any) {
           type="scripts"
           @parse="update"
           @select="handleBlockSelection"
+          @cursor="handleCursor"
         />
         <EditBlock
           v-for="(_, index) of styles"
@@ -121,6 +158,7 @@ function handleBlockSelection(newSel: any) {
           type="styles"
           @parse="update"
           @select="handleBlockSelection"
+          @cursor="handleCursor"
         />
         <EditBlock
           v-for="(_, index) of customs"
@@ -131,17 +169,14 @@ function handleBlockSelection(newSel: any) {
           :index="index"
           @parse="update"
           @select="handleBlockSelection"
+          @cursor="handleCursor"
         />
       </div>
     </template>
 
     <div class="credits">
+      <p>Made by <a href="https://twitter.com/yaeeelglx" target="_blank">@Tahul</a></p>
       <a href="https://github.com/Tahul/sfc-composer"> ↩️&nbsp;&nbsp;Bring me back to GitHub </a>
-
-      <p>
-        Made by
-        <a href="https://twitter.com/yaeeelglx" target="_blank">@Tahul</a>
-      </p>
     </div>
   </main>
 </template>
@@ -149,12 +184,17 @@ function handleBlockSelection(newSel: any) {
 <style scoped lang="postcss">
 main {
   width: 100%;
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
+  padding: 2rem;
   display: flex;
   align-items: center;
   flex-direction: column;
   gap: 2rem;
+}
+
+h1 {
+  font-weight: bolder;
 }
 
 .blocks {
@@ -166,9 +206,5 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
-  a {
-    margin: 4rem 0;
-  }
 }
 </style>

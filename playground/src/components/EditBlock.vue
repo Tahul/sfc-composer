@@ -11,7 +11,7 @@ const props = defineProps<{
   index: number
 }>()
 
-const $emit = defineEmits(['parse', 'select'])
+const $emit = defineEmits(['parse', 'select', 'cursor'])
 
 const lang = computed(() => {
   switch (props.type) {
@@ -53,6 +53,17 @@ function handleCursor(e: monaco.editor.ICursorPositionChangedEvent) {
   const offset = getOffset(block.value.content, lineNumber, column)
 
   cursor.value = offset
+
+  $emit(
+    'cursor',
+    {
+      id: props.id,
+      target: block.value,
+      raw: e,
+      offset,
+      sourceOffset: block.value.loc.start.offset + offset,
+    },
+  )
 }
 
 const selection = ref<monaco.editor.ICursorSelectionChangedEvent>()
@@ -185,7 +196,7 @@ function handleMounted(e: monaco.editor.IStandaloneCodeEditor) {
     <div class="actions">
       <div class="selection">
         <p>
-          <span>sfc[`{{ type }}`][{{ index }}]</span>
+          ℹ️ <span>sfc[`{{ type }}`][{{ index }}]</span>
         </p>
         <p>
           Cursor: <span>{{ cursor || 0 }}</span>

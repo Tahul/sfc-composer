@@ -113,7 +113,7 @@ onMounted(async () => {
         if (!editorInstance) { return }
         const model = getOrCreateModel(
           monaco.Uri.parse(`file:///${props.filename}`),
-          'vue',
+          props.lang,
           props.value || '',
         )
 
