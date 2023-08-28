@@ -3,7 +3,6 @@
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![Github Actions][github-actions-src]][github-actions-href]
-[![Codecov][codecov-src]][codecov-href]
 
 > 👨‍🔬 Pre-compiler helpers for Single File Components
 
@@ -25,11 +24,7 @@ pnpm install sfc-composer
 Import:
 
 ```js
-// ESM
 import { MagicVueSFC, createVueSFC } from 'sfc-composer'
-
-// CommonJS
-const { createVueSFC, MagicVueSFC } = require('sfc-composer')
 ```
 
 ## API
@@ -137,5 +132,3 @@ Published under [MIT License](./LICENSE).
 [npm-downloads-href]: https://npmjs.com/package/sfc-composer
 [github-actions-src]: https://img.shields.io/github/actions/workflow/status/tahul/sfc-composer/ci.yml?branch=main&style=flat-square
 [github-actions-href]: https://github.com/tahul/sfc-composer/actions?query=workflow%3Aci
-[codecov-src]: https://img.shields.io/codecov/c/gh/tahul/sfc-composer/main?style=flat-square
-[codecov-href]: https://codecov.io/gh/tahul/sfc-composer
