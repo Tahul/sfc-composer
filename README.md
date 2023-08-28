@@ -6,6 +6,8 @@
 
 > 👨‍🔬 Pre-compiler helpers for Single File Components
 
+Try it on the [playground](https://sfc-composer.netlify.app)
+
 ## Usage
 
 Install package:
