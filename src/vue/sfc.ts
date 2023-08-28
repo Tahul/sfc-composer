@@ -20,7 +20,7 @@ export const magicVueSfcDefaultOptions: MagicVueSFCOptions = {
 }
 
 export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> extends MagicSFC<T> {
-  public options: MagicVueSFCOptions = magicVueSfcDefaultOptions
+  declare public options: MagicVueSFCOptions
   declare public parsed?: SFCParseResult
   declare public templates: MagicBlock<SFCTemplateBlock>[]
   declare public scripts: MagicBlock<SFCScriptBlock | SFCBlock>[]
@@ -28,18 +28,17 @@ export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> exte
 
   constructor(
     source: string | MagicString,
-    options?: T,
+    userOptions?: T,
+    defaultOptions = magicVueSfcDefaultOptions,
   ) {
-    super(
-      source,
-      { ...magicVueSfcDefaultOptions, ...options } as T,
-    )
+    super(source, userOptions, defaultOptions as MagicVueSFCOptions)
   }
 
   public parse(): void {
     const {
       parser,
       silent = true,
+      parserOptions = {},
     } = this.options
 
     if (!parser) {
@@ -47,20 +46,25 @@ export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> exte
       return
     }
 
-    const parsedSfc = parser(this.ms.toString(), this.options?.parserOptions)
+    const parsedSfc = parser(this.ms.toString(), parserOptions)
 
     if (!parsedSfc) { return }
 
     this.parsed = parsedSfc
 
-    if (parsedSfc.descriptor?.template) { this.templates.push(proxyBlock(this.ms, parsedSfc.descriptor.template)) }
+    // <template>
+    if (parsedSfc.descriptor?.template) { this.templates = [proxyBlock(this.ms, parsedSfc.descriptor.template)] }
 
-    if (parsedSfc.descriptor?.script) { this.scripts.push(proxyBlock(this.ms, parsedSfc.descriptor.script)) }
+    // <script> & <script setup>
+    const scripts = []
+    if (parsedSfc.descriptor?.script) { scripts.push(proxyBlock(this.ms, parsedSfc.descriptor.script)) }
+    if (parsedSfc.descriptor?.scriptSetup) { scripts.push(proxyBlock(this.ms, parsedSfc.descriptor.scriptSetup)) }
+    if (scripts.length) { this.scripts = scripts }
 
-    if (parsedSfc.descriptor?.scriptSetup) { this.scripts.push(proxyBlock(this.ms, parsedSfc.descriptor.scriptSetup)) }
+    // <style>
+    if (parsedSfc.descriptor?.styles) { this.styles = parsedSfc.descriptor?.styles.map(styleBlock => proxyBlock(this.ms, styleBlock)) }
 
-    if (parsedSfc.descriptor?.styles) { parsedSfc.descriptor?.styles.forEach(styleBlock => this.styles.push(proxyBlock(this.ms, styleBlock))) }
-
-    if (parsedSfc.descriptor?.customBlocks) { parsedSfc.descriptor?.customBlocks.forEach(block => this.customs.push(proxyBlock(this.ms, block))) }
+    // <custom>
+    if (parsedSfc.descriptor?.customBlocks) { this.customs = parsedSfc.descriptor?.customBlocks.map(block => proxyBlock(this.ms, block)) }
   }
 }

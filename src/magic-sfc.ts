@@ -18,7 +18,7 @@ export const magicSfcDefaultOptions: MagicSFCOptions = {
 export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
   public source: string
   public ms: MagicString
-  public options: MagicSFCOptions = magicSfcDefaultOptions
+  public options: MagicSFCOptions
   public parsed?: any
   public templates: MagicBlock<any>[] = []
   public scripts: MagicBlock<any>[] = []
@@ -27,9 +27,10 @@ export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
 
   constructor(
     source: string | MagicString,
-    options?: T,
+    userOptions?: T,
+    defaultOptions = magicSfcDefaultOptions,
   ) {
-    this.options = { ...this.options, ...options }
+    this.options = { ...defaultOptions, ...userOptions }
 
     if (source instanceof MagicString) {
       this.source = source.toString()
@@ -37,7 +38,7 @@ export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
     }
     else {
       this.source = source
-      this.ms = new MagicString(this.source, { filename: options?.filename, indentExclusionRanges: options?.indentExclusionRanges })
+      this.ms = new MagicString(this.source, { filename: this.options?.filename, indentExclusionRanges: this.options?.indentExclusionRanges })
     }
 
     this.parse()
@@ -45,9 +46,13 @@ export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
 
   public parse(): void { /* Parse has no effect here as this class is built to be extended. */ }
 
-  public toString(): string { return this.ms.toString() }
+  public toString(): string {
+    return this.ms.toString()
+  }
 
-  public getSourcemap(options?: SourceMapOptions): SourceMap { return this.ms.generateMap({ source: this.options?.filename, includeContent: true, ...options }) }
+  public getSourcemap(sourceMapOptions?: SourceMapOptions): SourceMap {
+    return this.ms.generateMap({ source: this.options?.filename, includeContent: true, hires: true, ...sourceMapOptions })
+  }
 
   public getTransformResult(): TransformResult { return { code: this.toString(), map: this.getSourcemap() } }
 }

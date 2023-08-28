@@ -27,7 +27,9 @@
   ],
   "scripts": {
     "build": "unbuild -c build.config.ts",
-    "dev": "vitest dev",
+    "stub": "unbuild -c build.config.ts --stub",
+    "play": "pnpm build && pnpm -r --filter=./playground run dev",
+    "play:build": "pnpm build && pnpm -r --filter=./playground run build",
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . --quiet",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix --quiet",
     "prepack": "pnpm run build",
