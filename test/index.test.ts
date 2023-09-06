@@ -40,4 +40,10 @@ describe('Magic SFC', () => {
 
     expect(block.type).toBe('style')
   })
+
+  it('Do not parse on instanciation when lazy is set as option', () => {
+    const sfc = new MagicSFC('<script setup>let test: string</script>', { lazy: true })
+
+    expect(sfc.parsed).toBeUndefined()
+  })
 })

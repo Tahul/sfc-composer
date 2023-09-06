@@ -7,11 +7,13 @@ export interface MagicSFCOptions extends MagicStringOptions {
   parser?: any
   parserOptions?: any
   silent?: boolean
+  lazy?: boolean
 }
 
 export const magicSfcDefaultOptions: MagicSFCOptions = {
   parser: undefined,
   silent: false,
+  lazy: false,
   parserOptions: undefined,
 }
 
@@ -41,7 +43,7 @@ export class MagicSFC<T extends MagicSFCOptions = MagicSFCOptions> {
       this.ms = new MagicString(this.source, { filename: this.options?.filename, indentExclusionRanges: this.options?.indentExclusionRanges })
     }
 
-    this.parse()
+    if (!this.options.lazy) { this.parse() }
   }
 
   public parse(): void { /* Parse has no effect here as this class is built to be extended. */ }
