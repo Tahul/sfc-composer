@@ -9,7 +9,7 @@ describe('Create Svelte Block', () => {
     magicSvelteSfcOptions.parser = parse
   })
 
-  it('should create a template block correctly', () => {
+  it('Should create a template block correctly', () => {
     const block = {
       content: '<div>Hello World</div>',
     }
@@ -17,7 +17,7 @@ describe('Create Svelte Block', () => {
     expect(result).toBe('<div>Hello World</div>')
   })
 
-  it('should create a script block correctly', () => {
+  it('Should create a script block correctly', () => {
     const block = {
       content: 'console.log("Hello World");',
     }
@@ -25,7 +25,7 @@ describe('Create Svelte Block', () => {
     expect(result).toBe('<script>\nconsole.log("Hello World");\n</script>')
   })
 
-  it('should create a style block correctly', () => {
+  it('Should create a style block correctly', () => {
     const block = {
       content: 'body { color: red; }',
     }
@@ -33,7 +33,7 @@ describe('Create Svelte Block', () => {
     expect(result).toBe('<style>\nbody { color: red; }\n</style>')
   })
 
-  it('should handle multiple attributes correctly', () => {
+  it('Should handle multiple attributes correctly', () => {
     const block = {
       attrs: { lang: 'scss' },
       content: 'body { color: red; }',
@@ -43,12 +43,12 @@ describe('Create Svelte Block', () => {
     expect(result).toBe('<style>\nbody { color: red; }\n</style>')
   })
 
-  it('should return an empty string if no block is provided', () => {
+  it('Should return an empty string if no block is provided', () => {
     const result = createSvelteBlock(undefined, 'templates')
     expect(result).toBe('')
   })
 
-  it('should handle missing block.attrs gracefully', () => {
+  it('Should handle missing block.attrs gracefully', () => {
     const block = {
       content: '<div>Hello</div>',
     }
@@ -57,7 +57,7 @@ describe('Create Svelte Block', () => {
     expect(result).toBe('<div>Hello</div>')
   })
 
-  it('should handle missing templates option gracefully', () => {
+  it('Should handle missing templates option gracefully', () => {
     const options = {
       scripts: [{ content: 'console.log("Hello");' }],
     }

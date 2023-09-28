@@ -2,7 +2,6 @@ import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'svelte/compiler'
 import { MagicSvelteSFC, magicSvelteSfcOptions } from '../src/svelte/sfc'
-import { createSvelteBlock, createSvelteSFC } from '../src/svelte/create'
 import { completeSvelteComponent, svelteScript, svelteStyle, svelteTemplate } from './utils'
 
 describe('Magic Vue SFC', () => {
@@ -282,36 +281,5 @@ console.log('Appended!');
     sfc.styles[0].appendRight(22, '\n  font-size: 16px;')
 
     expect(sfc.toString()).toBe(expectedSFC)
-  })
-})
-
-describe('createSvelteBlock', () => {
-  it('should return an empty string if no block is provided', () => {
-    const result = createSvelteBlock(undefined, 'templates')
-    expect(result).toBe('')
-  })
-
-  it('should create a template block correctly', () => {
-    const block = {
-      content: '<div>Hello World</div>',
-    }
-    const result = createSvelteBlock(block, 'templates')
-    expect(result).toBe('<div>Hello World</div>')
-  })
-
-  it('should create a script block correctly', () => {
-    const block = {
-      content: 'console.log("Hello World");',
-    }
-    const result = createSvelteBlock(block, 'scripts')
-    expect(result).toBe('<script>\nconsole.log("Hello World");\n</script>')
-  })
-
-  it('should create a style block correctly', () => {
-    const block = {
-      content: 'body { color: red; }',
-    }
-    const result = createSvelteBlock(block, 'styles')
-    expect(result).toBe('<style>\nbody { color: red; }\n</style>')
   })
 })

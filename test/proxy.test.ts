@@ -3,7 +3,7 @@ import MagicString from 'magic-string'
 import { type MagicBlockBase, proxyBlock } from '../src'
 
 describe('proxyBlock', () => {
-  it('should create a proxy for a given block', () => {
+  it('Should create a proxy for a given block', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -17,7 +17,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock).toBeDefined()
   })
 
-  it('should update both source and block on append', () => {
+  it('Should update both source and block on append', () => {
     const source = new MagicString('Hello')
     const block: MagicBlockBase = {
       loc: {
@@ -34,7 +34,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.toString()).toBe('Hello, World!')
   })
 
-  it('should update only the block and not the source when modifying block outside of its location', () => {
+  it('Should update only the block and not the source when modifying block outside of its location', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -51,7 +51,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.toString()).toBe('World!')
   })
 
-  it('should allow additional properties to be set on the block', () => {
+  it('Should allow additional properties to be set on the block', () => {
     const source = new MagicString('Hello')
     const block: MagicBlockBase = {
       loc: {
@@ -66,7 +66,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.myProperty).toBe('test')
   })
 
-  it('should update both source and block on appendLeft', () => {
+  it('Should update both source and block on appendLeft', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -83,7 +83,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.toString()).toBe('WTestorld')
   })
 
-  it('should update both source and block on appendRight', () => {
+  it('Should update both source and block on appendRight', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -100,7 +100,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.toString()).toBe('WTestorld')
   })
 
-  it('should update both source and block on prepend', () => {
+  it('Should update both source and block on prepend', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -117,7 +117,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.toString()).toBe('TestWorld')
   })
 
-  it('should update both source and block on remove', () => {
+  it('Should update both source and block on remove', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -134,7 +134,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.toString()).toBe('')
   })
 
-  it('should update both source and block on overwrite', () => {
+  it('Should update both source and block on overwrite', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -151,7 +151,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.toString()).toBe('Planet')
   })
 
-  it('should return source', () => {
+  it('Should return source', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -166,7 +166,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.source.toString()).toBe('Hello, World!')
   })
 
-  it('should use custom get trap from handler', () => {
+  it('Should use custom get trap from handler', () => {
     const source = new MagicString('Hello, World!')
     const block: MagicBlockBase = {
       loc: {
@@ -190,7 +190,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.customProperty).toBe('modifiedValue')
   })
 
-  it('should use custom set trap from handler', () => {
+  it('Should use custom set trap from handler', () => {
     const source = new MagicString('Hello')
     const block: MagicBlockBase = {
       loc: {
@@ -215,7 +215,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.newProperty).toBe('prefixed-testValue')
   })
 
-  it('should allow to overwrite proxified functions', () => {
+  it('Should allow to overwrite proxified functions', () => {
     const source = new MagicString('Hello')
     const block: MagicBlockBase = {
       loc: {
@@ -239,7 +239,7 @@ describe('proxyBlock', () => {
     expect(console.log).toHaveBeenCalled()
   })
 
-  it('should use createSourceLocation when loc is not provided', () => {
+  it('Should use createSourceLocation when loc is not provided', () => {
     const source = new MagicString('Hello, World!')
 
     // Not providing the loc property
@@ -256,7 +256,7 @@ describe('proxyBlock', () => {
     expect(proxiedBlock.toString()).toBe('Hey, World!')
   })
 
-  it('should default to an empty object if no block is provided', () => {
+  it('Should default to an empty object if no block is provided', () => {
     const source = new MagicString('Hello, World!')
 
     // Not providing the block argument

@@ -19,5 +19,7 @@ export default defineBuildConfig({
     '@vue/compiler-core',
     'vue/compiler-sfc',
     'vue',
+    'svelte',
+    'svelte/compilter',
   ],
 })

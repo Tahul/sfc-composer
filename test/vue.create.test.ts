@@ -3,13 +3,13 @@ import { parse } from 'vue/compiler-sfc'
 import { createVueSFC as create, createVueBlock, createVueSFC } from '../src/vue/create'
 import { magicVueSfcDefaultOptions } from '../src/vue/sfc'
 
-describe('createVueBlock', () => {
+describe('Create Vue Block', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
     magicVueSfcDefaultOptions.parser = parse
   })
 
-  it('should create a template block correctly', () => {
+  it('Should create a template block correctly', () => {
     const block = {
       content: '<div>Hello World</div>',
     }
@@ -17,7 +17,7 @@ describe('createVueBlock', () => {
     expect(result).toBe('<template>\n<div>Hello World</div>\n</template>')
   })
 
-  it('should create a script block correctly', () => {
+  it('Should create a script block correctly', () => {
     const block = {
       content: 'console.log("Hello World");',
     }
@@ -25,7 +25,7 @@ describe('createVueBlock', () => {
     expect(result).toBe('<script>\nconsole.log("Hello World");\n</script>')
   })
 
-  it('should create a style block correctly', () => {
+  it('Should create a style block correctly', () => {
     const block = {
       content: 'body { color: red; }',
     }
@@ -33,7 +33,7 @@ describe('createVueBlock', () => {
     expect(result).toBe('<style>\nbody { color: red; }\n</style>')
   })
 
-  it('should handle multiple attributes correctly', () => {
+  it('Should handle multiple attributes correctly', () => {
     const block = {
       attrs: { scoped: true, lang: 'scss' },
       content: 'body { color: red; }',
@@ -43,12 +43,12 @@ describe('createVueBlock', () => {
     expect(result).toBe('<style scoped lang="scss">\nbody { color: red; }\n</style>')
   })
 
-  it('should return an empty string if no block is provided', () => {
+  it('Should return an empty string if no block is provided', () => {
     const result = createVueBlock(undefined, 'templates')
     expect(result).toBe('')
   })
 
-  it('should set custom block name from block.type if available', () => {
+  it('Should set custom block name from block.type if available', () => {
     const block = {
       type: 'my-custom-block',
       content: 'Some content',
@@ -63,7 +63,7 @@ describe('createVueBlock', () => {
     expect(resultWithNoType).toContain('<custom>')
   })
 
-  it('should set custom block name from block.attrs.type if block.type is not available', () => {
+  it('Should set custom block name from block.attrs.type if block.type is not available', () => {
     const block = {
       attrs: { type: 'my-custom-attr-block' },
       content: 'Some content',
@@ -72,7 +72,7 @@ describe('createVueBlock', () => {
     expect(result).toContain('<my-custom-attr-block')
   })
 
-  it('should handle missing block.attrs gracefully', () => {
+  it('Should handle missing block.attrs gracefully', () => {
     const block = {
       content: '<div>Hello</div>',
     }
@@ -81,7 +81,7 @@ describe('createVueBlock', () => {
     expect(result).toBe('<template>\n<div>Hello</div>\n</template>')
   })
 
-  it('should handle missing templates option gracefully', () => {
+  it('Should handle missing templates option gracefully', () => {
     const options = {
       scripts: [{ content: 'console.log("Hello");' }],
     }
