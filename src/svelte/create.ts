@@ -1,7 +1,7 @@
-import type { SFCBlock } from 'vue/compiler-sfc'
-import { MagicSvelteSFC } from './sfc'
+import type { BaseNode } from 'svelte/types/compiler/interfaces'
+import { MagicSFC } from './sfc'
 
-interface WriteableSFCBlock extends Partial<SFCBlock> {
+interface WriteableSFCBlock extends Partial<BaseNode> {
   content?: string
   src?: string
   [key: string]: any
@@ -15,7 +15,7 @@ interface WriteableDescriptor {
 
 interface CreateSvelteSFCOptions extends Partial<WriteableDescriptor> {} // Assuming this is the path to your MagicVueSFC implementation
 
-export function createSvelteBlock(
+export function createBlock(
   block: WriteableSFCBlock,
   blockType: keyof WriteableDescriptor,
 ): string {
@@ -34,10 +34,10 @@ export function createSvelteBlock(
     : `<${blockName}>\n${content}\n</${blockName}>`
 }
 
-export function createSvelteSFC(options: CreateSvelteSFCOptions = {}): MagicSvelteSFC {
-  const templates = options?.templates?.map(template => createSvelteBlock(template, 'templates')).join('\n\n') || ''
-  const scripts = options?.scripts?.map(script => createSvelteBlock(script, 'scripts')).join('\n\n') || ''
-  const styles = (options.styles || []).map(style => createSvelteBlock(style, 'styles')).join('\n\n') || ''
+export function createSFC(options: CreateSvelteSFCOptions = {}): MagicSFC {
+  const templates = options?.templates?.map(template => createBlock(template, 'templates')).join('\n\n') || ''
+  const scripts = options?.scripts?.map(script => createBlock(script, 'scripts')).join('\n\n') || ''
+  const styles = (options.styles || []).map(style => createBlock(style, 'styles')).join('\n\n') || ''
   const sfcContent = [templates, scripts, styles].filter(Boolean).join('\n\n')
-  return new MagicSvelteSFC(sfcContent)
+  return new MagicSFC(sfcContent)
 }

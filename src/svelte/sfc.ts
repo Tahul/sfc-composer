@@ -3,7 +3,7 @@ import type MagicString from 'magic-string'
 import type { MagicBlock } from '../proxy'
 import { proxyBlock } from '../proxy'
 import type { MagicSFCOptions } from '../index'
-import { MagicSFC } from '../index'
+import { MagicSFC as MagicSFCBase } from '../index'
 
 type SvelteParseFunction = (source: string, options: ParserOptions) => Ast
 
@@ -21,7 +21,7 @@ export const magicSvelteSfcOptions: MagicSvelteSFCOptions = {
   parserOptions: undefined,
 }
 
-export class MagicSvelteSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> extends MagicSFC<T> {
+export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> extends MagicSFCBase<T> {
   declare public options: MagicSvelteSFCOptions
   declare public parsed?: Ast
   declare public templates: MagicBlock<SvelteAST['html']>[]
@@ -36,7 +36,7 @@ export class MagicSvelteSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOpti
     super(source, userOptions, defaultOptions as MagicSvelteSFCOptions)
   }
 
-  public parse(): void {
+  public async parse(): Promise<MagicSFC<T>> {
     const {
       parser,
       silent = true,
@@ -45,12 +45,12 @@ export class MagicSvelteSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOpti
 
     if (!parser) {
       if (!silent) { throw new Error('You must provide a `parser` function (from svelte/compiler) in options when using MagicSvelteSFC.') }
-      return
+      return this
     }
 
     const parsedSfc = parser(this.ms.toString(), parserOptions)
 
-    if (!parsedSfc) { return }
+    if (!parsedSfc) { return this }
 
     this.parsed = parsedSfc
 
@@ -96,5 +96,7 @@ export class MagicSvelteSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOpti
         ),
       ]
     }
+
+    return this
   }
 }

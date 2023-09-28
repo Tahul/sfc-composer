@@ -1,155 +1,172 @@
 import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { parse } from 'vue/compiler-sfc'
-import { MagicSFC as MagicVueSFC, magicVueSfcDefaultOptions } from '../src/vue/sfc'
-import { completeComponent, script, scriptSetup, style, styleScoped, template } from './utils'
+import { parse } from '@astrojs/compiler'
+import * as utils from '@astrojs/compiler/utils'
+import { MagicSFC as MagicAstroSFC, magicAstroSfcOptions } from '../src/astro/sfc'
+import { astroScript, astroStyle, astroTemplate, completeAstroComponent } from './utils'
 
-describe('Magic Vue SFC', () => {
+describe('Magic Astro SFC', async () => {
   beforeEach(() => {
-    // Set default parser for MagicVueSFC
-    magicVueSfcDefaultOptions.parser = parse
+    // Set default parser for MagicAstroSFC
+    magicAstroSfcOptions.parser = parse
+    magicAstroSfcOptions.parserUtils = utils
   })
 
   it('Can create the class', async () => {
-    const sfc = await new MagicVueSFC(scriptSetup).parse()
+    const sfc = new MagicAstroSFC(astroTemplate)
 
-    expect(sfc.toString()).toBe(scriptSetup)
+    expect(sfc.toString()).toBe(astroTemplate)
   })
 
-  it('Cannot create a Magic Vue SFC without a parser function', async () => {
-    magicVueSfcDefaultOptions.parser = undefined
+  it('Cannot create a Magic astro SFC without a parser function', async () => {
+    magicAstroSfcOptions.parser = undefined
+
+    const sfc = new MagicAstroSFC(astroScript)
 
     try {
-      await new MagicVueSFC(scriptSetup).parse()
-      throw new Error('Code should not reach this point!')
+      await sfc.parse()
+      throw new Error('Code should node reach this point!')
     }
     catch (e) {
-      expect(e.message).toBe('You must provide a `parser` function (from vue/compiler-sfc) in options when using MagicVueSFC.')
+      expect(e.message).toBe('You must provide a `parser` function (from @astrojs/compiler) in options when using MagicAstroSFC.')
+    }
+  })
+
+  it('Cannot create a Magic astro SFC without a parserUtils object', async () => {
+    magicAstroSfcOptions.parserUtils = undefined
+
+    const sfc = new MagicAstroSFC(astroScript)
+
+    try {
+      await sfc.parse()
+      throw new Error('Code should node reach this point!')
+    }
+    catch (e) {
+      expect(e.message).toBe('You must provide a `parserUtils` object (from @astrojs/compiler/utils) in options when using MagicAstroSFC.')
     }
   })
 
   it('Can create the class from a MagicString', async () => {
-    const ms = new MagicString(scriptSetup)
+    const ms = new MagicString(astroScript)
 
-    const sfc = await new MagicVueSFC(ms).parse()
+    const sfc = new MagicAstroSFC(ms)
+
+    await sfc.parse()
 
     const appended = '\nlet secondTest: string'
 
     sfc.scripts[0].append(appended)
 
-    expect(sfc.toString()).toBe(`<script setup>let scriptSetup: string${appended}</script>`)
+    expect(sfc.toString()).toBe(`<script>let name = \`world\`;${appended}</script>`)
   })
 
   it('Can get a sourcemap', async () => {
-    const sfc = await new MagicVueSFC(scriptSetup).parse()
+    const sfc = new MagicAstroSFC(astroScript)
+
+    await sfc.parse()
 
     expect(sfc.getSourcemap()).toBeInstanceOf(SourceMap)
   })
 
   it('Can parse a <script> tag', async () => {
-    const sfc = await new MagicVueSFC(script).parse()
+    const sfc = new MagicAstroSFC(astroScript)
+
+    await sfc.parse()
+
     expect(sfc.scripts[0]).toBeInstanceOf(Object)
   })
 
   it('Can parse a <script setup> tag', async () => {
-    const sfc = await new MagicVueSFC(scriptSetup).parse()
+    const sfc = new MagicAstroSFC(astroScript)
+
+    await sfc.parse()
+
     expect(sfc.scripts[0]).toBeInstanceOf(Object)
   })
 
-  it('Can parse a <template> tag', async () => {
-    const sfc = await new MagicVueSFC(template).parse()
+  it('Can parse a HTML content', async () => {
+    const sfc = new MagicAstroSFC(astroTemplate)
+
+    await sfc.parse()
+
     expect(sfc.templates[0]).toBeInstanceOf(Object)
   })
 
   it('Can parse a <style> tag', async () => {
-    const sfc = await new MagicVueSFC(style).parse()
-    expect(sfc.styles[0]).toBeInstanceOf(Object)
-  })
+    const sfc = new MagicAstroSFC(astroStyle)
 
-  it('Can parse multiple <style> tags', async () => {
-    const sfc = await new MagicVueSFC(`${style}\n${styleScoped}`).parse()
+    await sfc.parse()
+
     expect(sfc.styles[0]).toBeInstanceOf(Object)
-    expect(sfc.styles[1]).toBeInstanceOf(Object)
   })
 
   it('Can parse a complete component', async () => {
-    const sfc = await new MagicVueSFC(completeComponent).parse()
+    const sfc = new MagicAstroSFC(completeAstroComponent)
+
+    await sfc.parse()
+
     expect(sfc.scripts[0]).toBeInstanceOf(Object)
     expect(sfc.scripts[1]).toBeInstanceOf(Object)
     expect(sfc.styles[0]).toBeInstanceOf(Object)
-    expect(sfc.styles[1]).toBeInstanceOf(Object)
     expect(sfc.templates[0]).toBeInstanceOf(Object)
   })
 
-  it('Can transform SFCBlock into MagicBlock<SFCBlock>', async () => {
-    const sfc = await new MagicVueSFC(completeComponent).parse()
+  it('Can transform SFCBlock into MagicBlock<Ast>', async () => {
+    const sfc = new MagicAstroSFC(completeAstroComponent)
+
+    await sfc.parse()
+
     sfc.scripts[1].append('test')
     sfc.scripts[1].append('\nnew-test')
-    expect(sfc.scripts[1].toString()).toEqual('let scriptSetup: stringtest\nnew-test')
-    expect(sfc.toString()).toEqual(completeComponent.replace('let scriptSetup: string', 'let scriptSetup: stringtest\nnew-test'))
-  })
 
-  it('Can parse a custom block', async () => {
-    const customBlock = '<custom>\n  Some custom content\n</custom>'
-    const sfc = await new MagicVueSFC(customBlock).parse()
-    expect(sfc.customs).toHaveLength(1)
-    expect(sfc.customs[0]).toBeInstanceOf(Object)
-  })
-
-  it('Can parse multiple custom blocks', async () => {
-    const customBlock1 = '<custom1>\n  Some custom content\n</custom1>'
-    const customBlock2 = '<custom2>\n  Some other custom content\n</custom2>'
-    const sfc = await new MagicVueSFC(`${customBlock1}\n${customBlock2}`).parse()
-    expect(sfc.customs).toHaveLength(2)
-    expect(sfc.customs[0]).toBeInstanceOf(Object)
-    expect(sfc.customs[1]).toBeInstanceOf(Object)
+    expect(sfc.scripts[1].toString()).toEqual('let name = \`world\`;test\nnew-test')
+    expect(sfc.toString()).toEqual(completeAstroComponent.replace('let name = \`world\`;', 'let name = \`world\`;test\nnew-test'))
   })
 
   it('Can manipulate a <script> block', async () => {
     const originalScript = '<script>\nexport default {\n  name: "MyComponent",\n};\n</script>'
     const expectedScript = '<script>\nexport default {\n  name: "UpdatedComponent",\n};\n</script>'
-    const sfc = await new MagicVueSFC(originalScript).parse()
+    const sfc = new MagicAstroSFC(originalScript)
+
+    await sfc.parse()
+
     sfc.scripts[0].overwrite(27, 38, 'UpdatedComponent')
     expect(sfc.toString()).toBe(expectedScript)
-  })
-
-  it('Can manipulate a <script setup> block', async () => {
-    const originalScriptSetup = '<script setup>\nconst msg = "Hello, world!";\n</script>'
-    const expectedScriptSetup = '<script setup>\nconst msg = "Hello, Mars!";\n</script>'
-    const sfc = await new MagicVueSFC(originalScriptSetup).parse()
-    sfc.scripts[0].overwrite(21, 26, 'Mars')
-    expect(sfc.toString()).toBe(expectedScriptSetup)
   })
 
   it('Can manipulate a <style> block', async () => {
     const originalStyle = '<style>\n.text {\n  color: red;\n}\n</style>'
     const expectedStyle = '<style>\n.text {\n  color: blue;\n}\n</style>'
-    const sfc = await new MagicVueSFC(originalStyle).parse()
+    const sfc = new MagicAstroSFC(originalStyle)
+    await sfc.parse()
     sfc.styles[0].overwrite(18, 21, 'blue')
     expect(sfc.toString()).toBe(expectedStyle)
   })
 
-  it('Can manipulate nested elements in a <template> block', async () => {
-    const originalNestedTemplate = '<template>\n  <div><span>Hello, world!</span></div>\n</template>'
-    const expectedNestedTemplate = '<template>\n  <div><span>Hello, Mars!</span></div>\n</template>'
-    const sfc = await new MagicVueSFC(originalNestedTemplate).parse()
-    sfc.templates[0].overwrite(21, 26, 'Mars')
+  it('Can manipulate nested elements in a <html> block', async () => {
+    const originalNestedTemplate = '<div><span>Hello, world!</span></div>'
+    const expectedNestedTemplate = '<div><span>Hello, Mars!</span></div>'
+    const sfc = new MagicAstroSFC(originalNestedTemplate)
+    await sfc.parse()
+    sfc.templates[0].overwrite(18, 23, 'Mars')
     expect(sfc.toString()).toBe(expectedNestedTemplate)
   })
 
   it('Can handle empty blocks', async () => {
     const emptyScript = '<script></script>'
-    const emptyScriptSetup = '<script setup></script>'
-    const emptyTemplate = '<template></template>'
+    const emptyTemplate = '\n\n'
     const emptyStyle = '<style></style>'
-    const sfc = await new MagicVueSFC(`${emptyScriptSetup}\n${emptyScript}\n${emptyTemplate}\n${emptyStyle}`).parse()
+    const sfc = new MagicAstroSFC(`${emptyScript}\n${emptyTemplate}\n${emptyStyle}`)
+    await sfc.parse()
 
-    // Vue SFC parser does sets null for empty script blocks
-    expect(sfc.scripts.length).toBeFalsy()
-    expect(sfc.styles.length).toBeFalsy()
+    // Astro SFC parser does detect empty script blocks
+    expect(sfc.scripts.length).toBeTruthy()
 
-    // Vue SFC parser does detect <template>
-    expect(sfc.templates.length).toBeTruthy()
+    // Astro SFC parser does detect empty style blocks
+    expect(sfc.styles.length).toBeTruthy()
+
+    // Astro SFC parser does not detect empty HTML
+    expect(sfc.templates.length).toBeFalsy()
   })
 
   it('Can append content to a <script> block', async () => {
@@ -157,7 +174,8 @@ describe('Magic Vue SFC', () => {
     const appended = '\nconsole.log("Appended!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${appended}</script>`
-    const sfc = await new MagicVueSFC(originalScript).parse()
+    const sfc = new MagicAstroSFC(originalScript)
+    await sfc.parse()
     sfc.scripts[0].append(appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -167,7 +185,8 @@ describe('Magic Vue SFC', () => {
     const appended = '\nconsole.log("AppendedLeft!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${appended}${baseContent}</script>`
-    const sfc = await new MagicVueSFC(originalScript).parse()
+    const sfc = new MagicAstroSFC(originalScript)
+    await sfc.parse()
     sfc.scripts[0].appendLeft(0, appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -177,7 +196,8 @@ describe('Magic Vue SFC', () => {
     const appended = '\nconsole.log("AppendedRight!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${appended}</script>`
-    const sfc = await new MagicVueSFC(originalScript).parse()
+    const sfc = new MagicAstroSFC(originalScript)
+    await sfc.parse()
     sfc.scripts[0].appendRight(baseContent.length, appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -187,7 +207,8 @@ describe('Magic Vue SFC', () => {
     const prepended = '\nconsole.log("Prepended!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${prepended}${baseContent}</script>`
-    const sfc = await new MagicVueSFC(originalScript).parse()
+    const sfc = new MagicAstroSFC(originalScript)
+    await sfc.parse()
     sfc.scripts[0].prepend(prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -197,7 +218,8 @@ describe('Magic Vue SFC', () => {
     const prepended = '\nconsole.log("PrependedLeft!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${prepended}${baseContent}</script>`
-    const sfc = await new MagicVueSFC(originalScript).parse()
+    const sfc = new MagicAstroSFC(originalScript)
+    await sfc.parse()
     sfc.scripts[0].prependLeft(0, prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -207,16 +229,14 @@ describe('Magic Vue SFC', () => {
     const prepended = '\nconsole.log("PrependedRight!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${prepended}</script>`
-    const sfc = await new MagicVueSFC(originalScript).parse()
+    const sfc = new MagicAstroSFC(originalScript)
+    await sfc.parse()
     sfc.scripts[0].prependRight(baseContent.length, prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
 
   it('Can manipulate every block of an SFC', async () => {
-    const originalSFC = `
-<template>
-  <div>{{ msg }}</div>
-</template>
+    const originalSFC = `<div>{{ msg }}</div>
 
 <script>
 export default {
@@ -228,10 +248,6 @@ export default {
 };
 </script>
 
-<script setup>
-const setupMsg = 'Hello from setup!';
-</script>
-
 <style>
 .text {
   color: red;
@@ -239,10 +255,7 @@ const setupMsg = 'Hello from setup!';
 </style>
 `
 
-    const expectedSFC = `
-<template>
-  <div>{{ updatedMsg }}</div>
-</template>
+    const expectedSFC = `<div>{{ updatedMsg }}</div>
 
 <script>
 export default {
@@ -254,10 +267,6 @@ export default {
 };
 </script>
 
-<script setup>
-const setupMsg = 'Hello from updated setup!';
-</script>
-
 <style>
 .text {
   color: blue;
@@ -265,20 +274,17 @@ const setupMsg = 'Hello from updated setup!';
 </style>
 `
 
-    const sfc = await new MagicVueSFC(originalSFC).parse()
-    sfc.templates[0].overwrite(11, 14, 'updatedMsg')
+    const sfc = new MagicAstroSFC(originalSFC)
+    await sfc.parse()
+    sfc.templates[0].overwrite(8, 11, 'updatedMsg')
     sfc.scripts[0].overwrite(61, 66, 'Mars')
-    sfc.scripts[1].appendLeft(29, ' updated')
     sfc.styles[0].overwrite(18, 21, 'blue')
 
     expect(sfc.toString()).toBe(expectedSFC)
   })
 
   it('Uses all methods on different blocks', async () => {
-    const originalSFC = `
-<template>
-  <div>Hello, world!</div>
-</template>
+    const originalSFC = `<div>Hello, world!</div>
 
 <script>
 export default {
@@ -292,11 +298,8 @@ export default {
 }
 </style>
 `
-    const expectedSFC = `
-<template>
-  <span>Hi, Mars!</span>
-  <div>Hello, world!</div>
-</template>
+    const expectedSFC = `<span>Hi, Mars!</span>
+<div>Hello, world!</div>
 
 <script>
 console.log('Prepended!');
@@ -319,10 +322,12 @@ console.log('Appended!');
 </style>
 `
 
-    const sfc = await new MagicVueSFC(originalSFC).parse()
+    const sfc = new MagicAstroSFC(originalSFC)
+
+    await sfc.parse()
 
     // Manipulate <template> block
-    sfc.templates[0].prepend('\n  <span>Hi, Mars!</span>')
+    sfc.templates[0].prepend('<span>Hi, Mars!</span>\n')
 
     // Manipulate <script> block
     sfc.scripts[0].prepend('\nconsole.log(\'Prepended!\');')

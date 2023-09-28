@@ -3,7 +3,7 @@ import type MagicString from 'magic-string'
 import type { MagicBlock } from '../proxy'
 import { proxyBlock } from '../proxy'
 import type { MagicSFCOptions } from '../index'
-import { MagicSFC } from '../index'
+import { MagicSFC as MagicSFCBase } from '../index'
 
 type VueParseFunction = (source: string, { sourceMap, filename, sourceRoot, pad, ignoreEmpty, compiler }?: SFCParseOptions) => SFCParseResult
 
@@ -19,7 +19,7 @@ export const magicVueSfcDefaultOptions: MagicVueSFCOptions = {
   parserOptions: undefined,
 }
 
-export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> extends MagicSFC<T> {
+export class MagicSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> extends MagicSFCBase<T> {
   declare public options: MagicVueSFCOptions
   declare public parsed?: SFCParseResult
   declare public templates: MagicBlock<SFCTemplateBlock>[]
@@ -34,7 +34,7 @@ export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> exte
     super(source, userOptions, defaultOptions as MagicVueSFCOptions)
   }
 
-  public parse(): void {
+  public async parse(): Promise<MagicSFC<T>> {
     const {
       parser,
       silent = true,
@@ -43,12 +43,12 @@ export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> exte
 
     if (!parser) {
       if (!silent) { throw new Error('You must provide a `parser` function (from vue/compiler-sfc) in options when using MagicVueSFC.') }
-      return
+      return this
     }
 
     const parsedSfc = parser(this.ms.toString(), parserOptions)
 
-    if (!parsedSfc) { return }
+    if (!parsedSfc) { return this }
 
     this.parsed = parsedSfc
 
@@ -66,5 +66,7 @@ export class MagicVueSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> exte
 
     // <custom>
     if (parsedSfc.descriptor?.customBlocks) { this.customs = parsedSfc.descriptor?.customBlocks.map(block => proxyBlock(this.ms, block)) }
+
+    return this
   }
 }

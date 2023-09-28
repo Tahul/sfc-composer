@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'svelte/compiler'
-import { createSvelteSFC as create, createSvelteBlock, createSvelteSFC } from '../src/svelte/create'
+import { createSFC as create, createBlock as createSvelteBlock } from '../src/svelte/create'
 import { magicSvelteSfcOptions } from '../src/svelte/sfc'
 
 describe('Create Svelte Block', () => {
@@ -61,7 +61,7 @@ describe('Create Svelte Block', () => {
     const options = {
       scripts: [{ content: 'console.log("Hello");' }],
     }
-    const result = createSvelteSFC(options)
+    const result = create(options)
     const sfcContent = result.toString() // Assuming toString method exists
 
     // Assert there is no <template> block but the <script> block exists

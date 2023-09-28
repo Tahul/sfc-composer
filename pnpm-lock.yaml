@@ -15,6 +15,9 @@ importers:
       '@antfu/eslint-config':
         specifier: ^0.41.0
         version: 0.41.0(eslint@8.48.0)(typescript@5.2.2)
+      '@astrojs/compiler':
+        specifier: ^2.1.0
+        version: 2.1.0
       '@vitest/coverage-c8':
         specifier: ^0.33.0
         version: 0.33.0(vitest@0.34.3)
@@ -231,6 +234,10 @@ packages:
       - jest
       - supports-color
       - typescript
+    dev: true
+
+  /@astrojs/compiler@2.1.0:
+    resolution: {integrity: sha512-Mp+qrNhly+27bL/Zq8lGeUY+YrdoU0eDfIlAeGIPrzt0PnI/jGpvPUdCaugv4zbCrDkOUScFfcbeEiYumrdJnw==}
     dev: true
 
   /@babel/code-frame@7.22.13:

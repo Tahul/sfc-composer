@@ -1,5 +1,5 @@
 import type { SFCBlock } from 'vue/compiler-sfc'
-import { MagicVueSFC } from './sfc'
+import { MagicSFC } from './sfc'
 
 interface WriteableSFCBlock extends Partial<SFCBlock> {
   content?: string
@@ -18,7 +18,7 @@ interface WriteableDescriptor {
 
 interface CreateVueSFCOptions extends Partial<WriteableDescriptor> {} // Assuming this is the path to your MagicVueSFC implementation
 
-export function createVueBlock(
+export function createBlock(
   block: WriteableSFCBlock,
   blockType: keyof WriteableDescriptor,
 ): string {
@@ -55,11 +55,11 @@ export function createVueBlock(
   return `<${[blockName, scoped, attrs, lang, src, setup].filter(Boolean).join(' ')}>\n${content}\n</${blockName}>`
 }
 
-export function createVueSFC(options: CreateVueSFCOptions = {}): MagicVueSFC {
-  const templates = options?.templates?.map(template => createVueBlock(template, 'templates')).join('\n\n') || ''
-  const scripts = options?.scripts?.map(script => createVueBlock(script, 'scripts')).join('\n\n') || ''
-  const styles = (options.styles || []).map(style => createVueBlock(style, 'styles')).join('\n\n') || ''
-  const customBlocks = options?.customs?.map(customBlock => createVueBlock(customBlock, 'customs')).join('\n\n') || ''
+export function createSFC(options: CreateVueSFCOptions = {}): MagicSFC {
+  const templates = options?.templates?.map(template => createBlock(template, 'templates')).join('\n\n') || ''
+  const scripts = options?.scripts?.map(script => createBlock(script, 'scripts')).join('\n\n') || ''
+  const styles = (options.styles || []).map(style => createBlock(style, 'styles')).join('\n\n') || ''
+  const customBlocks = options?.customs?.map(customBlock => createBlock(customBlock, 'customs')).join('\n\n') || ''
   const sfcContent = [templates, scripts, styles, customBlocks].filter(Boolean).join('\n\n')
-  return new MagicVueSFC(sfcContent)
+  return new MagicSFC(sfcContent)
 }

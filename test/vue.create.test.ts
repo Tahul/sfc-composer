@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'vue/compiler-sfc'
-import { createVueSFC as create, createVueBlock, createVueSFC } from '../src/vue/create'
+import {
+  createSFC as create,
+  createBlock as createVueBlock,
+} from '../src/vue/create'
 import { magicVueSfcDefaultOptions } from '../src/vue/sfc'
 
 describe('Create Vue Block', () => {
@@ -85,7 +88,7 @@ describe('Create Vue Block', () => {
     const options = {
       scripts: [{ content: 'console.log("Hello");' }],
     }
-    const result = createVueSFC(options)
+    const result = create(options)
     const sfcContent = result.toString() // Assuming toString method exists
 
     // Assert there is no <template> block but the <script> block exists
