@@ -1,152 +1,122 @@
 import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { parse } from 'vue/compiler-sfc'
-import { MagicVueSFC, magicVueSfcDefaultOptions } from '../src/vue/sfc'
-import { completeComponent, script, scriptSetup, style, styleScoped, template } from './utils'
+import { parse } from 'svelte/compiler'
+import { MagicSvelteSFC, magicSvelteSfcOptions } from '../src/svelte/sfc'
+import { createSvelteBlock, createSvelteSFC } from '../src/svelte/create'
+import { completeSvelteComponent, svelteScript, svelteStyle, svelteTemplate } from './utils'
 
 describe('Magic Vue SFC', () => {
   beforeEach(() => {
-    // Set default parser for MagicVueSFC
-    magicVueSfcDefaultOptions.parser = parse
+    // Set default parser for MagicSvelteSFC
+    magicSvelteSfcOptions.parser = parse
   })
 
   it('Can create the class', () => {
-    const sfc = new MagicVueSFC(scriptSetup)
+    const sfc = new MagicSvelteSFC(svelteScript)
 
-    expect(sfc.toString()).toBe(scriptSetup)
+    expect(sfc.toString()).toBe(svelteScript)
   })
 
-  it('Cannot create a Magic Vue SFC without a parser function', () => {
-    magicVueSfcDefaultOptions.parser = undefined
+  it('Cannot create a Magic Svelte SFC without a parser function', () => {
+    magicSvelteSfcOptions.parser = undefined
 
     expect(
-      () => new MagicVueSFC(scriptSetup),
+      () => new MagicSvelteSFC(svelteScript),
     ).toThrowError(
-      'You must provide a `parser` function (from vue/compiler-sfc) in options when using MagicVueSFC.',
+      'You must provide a `parser` function (from svelte/compiler) in options when using MagicSvelteSFC.',
     )
   })
 
   it('Can create the class from a MagicString', () => {
-    const ms = new MagicString(scriptSetup)
+    const ms = new MagicString(svelteScript)
 
-    const sfc = new MagicVueSFC(ms)
+    const sfc = new MagicSvelteSFC(ms)
 
     const appended = '\nlet secondTest: string'
 
     sfc.scripts[0].append(appended)
 
-    expect(sfc.toString()).toBe(`<script setup>let scriptSetup: string${appended}</script>`)
+    expect(sfc.toString()).toBe(`<script>let name = \`world\`;${appended}</script>`)
   })
 
   it('Can get a sourcemap', () => {
-    const sfc = new MagicVueSFC(scriptSetup)
+    const sfc = new MagicSvelteSFC(svelteScript)
 
     expect(sfc.getSourcemap()).toBeInstanceOf(SourceMap)
   })
 
   it('Can parse a <script> tag', () => {
-    const sfc = new MagicVueSFC(script)
+    const sfc = new MagicSvelteSFC(svelteScript)
     expect(sfc.scripts[0]).toBeInstanceOf(Object)
   })
 
   it('Can parse a <script setup> tag', () => {
-    const sfc = new MagicVueSFC(scriptSetup)
+    const sfc = new MagicSvelteSFC(svelteScript)
     expect(sfc.scripts[0]).toBeInstanceOf(Object)
   })
 
-  it('Can parse a <template> tag', () => {
-    const sfc = new MagicVueSFC(template)
+  it('Can parse a HTML content', () => {
+    const sfc = new MagicSvelteSFC(svelteTemplate)
     expect(sfc.templates[0]).toBeInstanceOf(Object)
   })
 
   it('Can parse a <style> tag', () => {
-    const sfc = new MagicVueSFC(style)
+    const sfc = new MagicSvelteSFC(svelteStyle)
     expect(sfc.styles[0]).toBeInstanceOf(Object)
-  })
-
-  it('Can parse multiple <style> tags', () => {
-    const sfc = new MagicVueSFC(`${style}\n${styleScoped}`)
-    expect(sfc.styles[0]).toBeInstanceOf(Object)
-    expect(sfc.styles[1]).toBeInstanceOf(Object)
   })
 
   it('Can parse a complete component', () => {
-    const sfc = new MagicVueSFC(completeComponent)
+    const sfc = new MagicSvelteSFC(completeSvelteComponent)
     expect(sfc.scripts[0]).toBeInstanceOf(Object)
-    expect(sfc.scripts[1]).toBeInstanceOf(Object)
     expect(sfc.styles[0]).toBeInstanceOf(Object)
-    expect(sfc.styles[1]).toBeInstanceOf(Object)
     expect(sfc.templates[0]).toBeInstanceOf(Object)
   })
 
-  it('Can transform SFCBlock into MagicBlock<SFCBlock>', () => {
-    const sfc = new MagicVueSFC(completeComponent)
-    sfc.scripts[1].append('test')
-    sfc.scripts[1].append('\nnew-test')
-    expect(sfc.scripts[1].toString()).toEqual('let scriptSetup: stringtest\nnew-test')
-    expect(sfc.toString()).toEqual(completeComponent.replace('let scriptSetup: string', 'let scriptSetup: stringtest\nnew-test'))
-  })
-
-  it('Can parse a custom block', () => {
-    const customBlock = '<custom>\n  Some custom content\n</custom>'
-    const sfc = new MagicVueSFC(customBlock)
-    expect(sfc.customs).toHaveLength(1)
-    expect(sfc.customs[0]).toBeInstanceOf(Object)
-  })
-
-  it('Can parse multiple custom blocks', () => {
-    const customBlock1 = '<custom1>\n  Some custom content\n</custom1>'
-    const customBlock2 = '<custom2>\n  Some other custom content\n</custom2>'
-    const sfc = new MagicVueSFC(`${customBlock1}\n${customBlock2}`)
-    expect(sfc.customs).toHaveLength(2)
-    expect(sfc.customs[0]).toBeInstanceOf(Object)
-    expect(sfc.customs[1]).toBeInstanceOf(Object)
+  it('Can transform SFCBlock into MagicBlock<Ast>', () => {
+    const sfc = new MagicSvelteSFC(completeSvelteComponent)
+    sfc.scripts[0].append('test')
+    sfc.scripts[0].append('\nnew-test')
+    expect(sfc.scripts[0].toString()).toEqual('let name = \`world\`;test\nnew-test')
+    expect(sfc.toString()).toEqual(completeSvelteComponent.replace('let name = \`world\`;', 'let name = \`world\`;test\nnew-test'))
   })
 
   it('Can manipulate a <script> block', () => {
     const originalScript = '<script>\nexport default {\n  name: "MyComponent",\n};\n</script>'
     const expectedScript = '<script>\nexport default {\n  name: "UpdatedComponent",\n};\n</script>'
-    const sfc = new MagicVueSFC(originalScript)
+    const sfc = new MagicSvelteSFC(originalScript)
     sfc.scripts[0].overwrite(27, 38, 'UpdatedComponent')
     expect(sfc.toString()).toBe(expectedScript)
-  })
-
-  it('Can manipulate a <script setup> block', () => {
-    const originalScriptSetup = '<script setup>\nconst msg = "Hello, world!";\n</script>'
-    const expectedScriptSetup = '<script setup>\nconst msg = "Hello, Mars!";\n</script>'
-    const sfc = new MagicVueSFC(originalScriptSetup)
-    sfc.scripts[0].overwrite(21, 26, 'Mars')
-    expect(sfc.toString()).toBe(expectedScriptSetup)
   })
 
   it('Can manipulate a <style> block', () => {
     const originalStyle = '<style>\n.text {\n  color: red;\n}\n</style>'
     const expectedStyle = '<style>\n.text {\n  color: blue;\n}\n</style>'
-    const sfc = new MagicVueSFC(originalStyle)
+    const sfc = new MagicSvelteSFC(originalStyle)
     sfc.styles[0].overwrite(18, 21, 'blue')
     expect(sfc.toString()).toBe(expectedStyle)
   })
 
-  it('Can manipulate nested elements in a <template> block', () => {
-    const originalNestedTemplate = '<template>\n  <div><span>Hello, world!</span></div>\n</template>'
-    const expectedNestedTemplate = '<template>\n  <div><span>Hello, Mars!</span></div>\n</template>'
-    const sfc = new MagicVueSFC(originalNestedTemplate)
-    sfc.templates[0].overwrite(21, 26, 'Mars')
+  it('Can manipulate nested elements in a <html> block', () => {
+    const originalNestedTemplate = '<div><span>Hello, world!</span></div>'
+    const expectedNestedTemplate = '<div><span>Hello, Mars!</span></div>'
+    const sfc = new MagicSvelteSFC(originalNestedTemplate)
+    sfc.templates[0].overwrite(18, 23, 'Mars')
     expect(sfc.toString()).toBe(expectedNestedTemplate)
   })
 
   it('Can handle empty blocks', () => {
     const emptyScript = '<script></script>'
-    const emptyScriptSetup = '<script setup></script>'
-    const emptyTemplate = '<template></template>'
+    const emptyTemplate = '\n\n'
     const emptyStyle = '<style></style>'
-    const sfc = new MagicVueSFC(`${emptyScriptSetup}\n${emptyScript}\n${emptyTemplate}\n${emptyStyle}`)
+    const sfc = new MagicSvelteSFC(`${emptyScript}\n${emptyTemplate}\n${emptyStyle}`)
 
-    // Vue SFC parser does sets null for empty script blocks
-    expect(sfc.scripts.length).toBeFalsy()
-    expect(sfc.styles.length).toBeFalsy()
+    // Svelte SFC parser does detect empty script blocks
+    expect(sfc.scripts.length).toBeTruthy()
 
-    // Vue SFC parser does detect <template>
+    // Svelte SFC parser does detect empty style blocks
+    expect(sfc.styles.length).toBeTruthy()
+
+    // Svelte SFC parser does not detect empty HTML
     expect(sfc.templates.length).toBeTruthy()
   })
 
@@ -155,7 +125,7 @@ describe('Magic Vue SFC', () => {
     const appended = '\nconsole.log("Appended!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${appended}</script>`
-    const sfc = new MagicVueSFC(originalScript)
+    const sfc = new MagicSvelteSFC(originalScript)
     sfc.scripts[0].append(appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -165,7 +135,7 @@ describe('Magic Vue SFC', () => {
     const appended = '\nconsole.log("AppendedLeft!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${appended}${baseContent}</script>`
-    const sfc = new MagicVueSFC(originalScript)
+    const sfc = new MagicSvelteSFC(originalScript)
     sfc.scripts[0].appendLeft(0, appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -175,7 +145,7 @@ describe('Magic Vue SFC', () => {
     const appended = '\nconsole.log("AppendedRight!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${appended}</script>`
-    const sfc = new MagicVueSFC(originalScript)
+    const sfc = new MagicSvelteSFC(originalScript)
     sfc.scripts[0].appendRight(baseContent.length, appended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -185,7 +155,7 @@ describe('Magic Vue SFC', () => {
     const prepended = '\nconsole.log("Prepended!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${prepended}${baseContent}</script>`
-    const sfc = new MagicVueSFC(originalScript)
+    const sfc = new MagicSvelteSFC(originalScript)
     sfc.scripts[0].prepend(prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -195,7 +165,7 @@ describe('Magic Vue SFC', () => {
     const prepended = '\nconsole.log("PrependedLeft!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${prepended}${baseContent}</script>`
-    const sfc = new MagicVueSFC(originalScript)
+    const sfc = new MagicSvelteSFC(originalScript)
     sfc.scripts[0].prependLeft(0, prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
@@ -205,16 +175,13 @@ describe('Magic Vue SFC', () => {
     const prepended = '\nconsole.log("PrependedRight!");'
     const originalScript = `<script>${baseContent}</script>`
     const expectedScript = `<script>${baseContent}${prepended}</script>`
-    const sfc = new MagicVueSFC(originalScript)
+    const sfc = new MagicSvelteSFC(originalScript)
     sfc.scripts[0].prependRight(baseContent.length, prepended)
     expect(sfc.toString()).toBe(expectedScript)
   })
 
   it('Can manipulate every block of an SFC', () => {
-    const originalSFC = `
-<template>
-  <div>{{ msg }}</div>
-</template>
+    const originalSFC = `<div>{{ msg }}</div>
 
 <script>
 export default {
@@ -226,10 +193,6 @@ export default {
 };
 </script>
 
-<script setup>
-const setupMsg = 'Hello from setup!';
-</script>
-
 <style>
 .text {
   color: red;
@@ -237,10 +200,7 @@ const setupMsg = 'Hello from setup!';
 </style>
 `
 
-    const expectedSFC = `
-<template>
-  <div>{{ updatedMsg }}</div>
-</template>
+    const expectedSFC = `<div>{{ updatedMsg }}</div>
 
 <script>
 export default {
@@ -252,10 +212,6 @@ export default {
 };
 </script>
 
-<script setup>
-const setupMsg = 'Hello from updated setup!';
-</script>
-
 <style>
 .text {
   color: blue;
@@ -263,20 +219,16 @@ const setupMsg = 'Hello from updated setup!';
 </style>
 `
 
-    const sfc = new MagicVueSFC(originalSFC)
-    sfc.templates[0].overwrite(11, 14, 'updatedMsg')
+    const sfc = new MagicSvelteSFC(originalSFC)
+    sfc.templates[0].overwrite(8, 11, 'updatedMsg')
     sfc.scripts[0].overwrite(61, 66, 'Mars')
-    sfc.scripts[1].appendLeft(29, ' updated')
     sfc.styles[0].overwrite(18, 21, 'blue')
 
     expect(sfc.toString()).toBe(expectedSFC)
   })
 
   it('Uses all methods on different blocks', () => {
-    const originalSFC = `
-<template>
-  <div>Hello, world!</div>
-</template>
+    const originalSFC = `<div>Hello, world!</div>
 
 <script>
 export default {
@@ -290,11 +242,8 @@ export default {
 }
 </style>
 `
-    const expectedSFC = `
-<template>
-  <span>Hi, Mars!</span>
-  <div>Hello, world!</div>
-</template>
+    const expectedSFC = `<span>Hi, Mars!</span>
+<div>Hello, world!</div>
 
 <script>
 console.log('Prepended!');
@@ -317,10 +266,10 @@ console.log('Appended!');
 </style>
 `
 
-    const sfc = new MagicVueSFC(originalSFC)
+    const sfc = new MagicSvelteSFC(originalSFC)
 
     // Manipulate <template> block
-    sfc.templates[0].prepend('\n  <span>Hi, Mars!</span>')
+    sfc.templates[0].prepend('<span>Hi, Mars!</span>\n')
 
     // Manipulate <script> block
     sfc.scripts[0].prepend('\nconsole.log(\'Prepended!\');')
@@ -333,5 +282,36 @@ console.log('Appended!');
     sfc.styles[0].appendRight(22, '\n  font-size: 16px;')
 
     expect(sfc.toString()).toBe(expectedSFC)
+  })
+})
+
+describe('createSvelteBlock', () => {
+  it('should return an empty string if no block is provided', () => {
+    const result = createSvelteBlock(undefined, 'templates')
+    expect(result).toBe('')
+  })
+
+  it('should create a template block correctly', () => {
+    const block = {
+      content: '<div>Hello World</div>',
+    }
+    const result = createSvelteBlock(block, 'templates')
+    expect(result).toBe('<div>Hello World</div>')
+  })
+
+  it('should create a script block correctly', () => {
+    const block = {
+      content: 'console.log("Hello World");',
+    }
+    const result = createSvelteBlock(block, 'scripts')
+    expect(result).toBe('<script>\nconsole.log("Hello World");\n</script>')
+  })
+
+  it('should create a style block correctly', () => {
+    const block = {
+      content: 'body { color: red; }',
+    }
+    const result = createSvelteBlock(block, 'styles')
+    expect(result).toBe('<style>\nbody { color: red; }\n</style>')
   })
 })

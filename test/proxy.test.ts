@@ -186,7 +186,7 @@ describe('proxyBlock', () => {
       },
     }
 
-    const proxiedBlock = proxyBlock(source, block, handler)
+    const proxiedBlock = proxyBlock(source, block, block.loc, handler)
     expect(proxiedBlock.customProperty).toBe('modifiedValue')
   })
 
@@ -210,7 +210,7 @@ describe('proxyBlock', () => {
       },
     }
 
-    const proxiedBlock = proxyBlock(source, block, handler)
+    const proxiedBlock = proxyBlock(source, block, block.loc, handler)
     proxiedBlock.newProperty = 'testValue'
     expect(proxiedBlock.newProperty).toBe('prefixed-testValue')
   })
@@ -229,7 +229,7 @@ describe('proxyBlock', () => {
 
     vi.spyOn(console, 'log').mockImplementationOnce(() => {})
 
-    proxiedBlock.overwrite = (...args) => {
+    proxiedBlock.overwrite = () => {
       console.log('is overwritten')
       return proxiedBlock
     }

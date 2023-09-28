@@ -3,56 +3,72 @@ import type { SourceLocation } from './loc'
 import { createSourceLocation } from './loc'
 
 export interface MagicBlockBase {
-  loc?: SourceLocation
+  loc?: SourceLocation | { start: number; end: number }
   [key: string]: any
 }
 
 export type MagicBlock<T extends MagicBlockBase = MagicBlockBase> = T & MagicString
 
+function resolveOffsets(
+  loc: SourceLocation | { start: number; end: number },
+): { start: number; end: number } {
+  let { start, end } = loc
+
+  // Set offset
+  if (typeof start !== 'number') { start = start?.offset }
+  if (typeof end !== 'number') { end = end?.offset }
+
+  return {
+    start: start as number,
+    end: end as number,
+  }
+}
+
 export function proxyBlock<T extends MagicBlockBase = MagicBlockBase>(
   source: MagicString,
   block?: T,
+  loc?: SourceLocation | { start: number; end: number },
   handler: ProxyHandler<object> = {},
 ): MagicBlock<T> {
-  const { start: blockStart, end: blockEnd } = block?.loc || createSourceLocation(source.toString())
+  const { start: blockStart, end: blockEnd } = resolveOffsets(loc || block?.loc || createSourceLocation(source.toString()))
 
   // Grab content from source
-  const content = source.toString().substring(blockStart.offset, blockEnd.offset)
+  const content = source.toString().substring(blockStart, blockEnd)
 
   // Recreate a local Magic String from the block content.
   const snip: MagicString = new MagicString(content)
 
   const proxified: { [K in keyof MagicString]?: MagicString[K] } = {
     append: (content: string) => {
-      source.appendRight(blockEnd.offset, content)
+      source.appendRight(blockEnd, content)
       return snip.append(content)
     },
     appendLeft: (index: number, content: string) => {
-      source.appendLeft(blockStart.offset + index, content)
+      source.appendLeft(blockStart + index, content)
       return snip.appendLeft(index, content)
     },
     appendRight: (index: number, content: string) => {
-      source.appendRight(blockStart.offset + index, content)
+      source.appendRight(blockStart + index, content)
       return snip.appendRight(index, content)
     },
     prepend: (content: string) => {
-      source.prependRight(blockStart.offset, content)
+      source.prependRight(blockStart, content)
       return snip.prepend(content)
     },
     prependLeft: (index: number, content: string) => {
-      source.prependLeft(blockStart.offset + index, content)
+      source.prependLeft(blockStart + index, content)
       return snip.prependLeft(index, content)
     },
     prependRight: (index: number, content: string) => {
-      source.prependRight(blockStart.offset + index, content)
+      source.prependRight(blockStart + index, content)
       return snip.prependRight(index, content)
     },
     overwrite: (start: number, end: number, replacement: string, options?: { storeName?: boolean; contentOnly?: boolean }) => {
-      source.overwrite(blockStart.offset + start, blockStart.offset + end, replacement, options)
+      source.overwrite(blockStart + start, blockStart + end, replacement, options)
       return snip.overwrite(start, end, replacement, options)
     },
     remove: (start: number, end: number) => {
-      source.remove(blockStart.offset + start, blockStart.offset + end)
+      source.remove(blockStart + start, blockStart + end)
       return snip.remove(start, end)
     },
   }

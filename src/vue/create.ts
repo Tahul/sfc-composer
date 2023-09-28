@@ -36,28 +36,30 @@ export function createVueBlock(
   if (blockType === 'styles') { blockName = 'style' }
 
   // Map attrs
-  const attrs = Object.entries(block.attrs || {})
+  const attrs = Object.keys(block.attrs).length
+    ? Object.entries(block.attrs || {})
     // Filter out `setup` as it's used separately
-    .filter(([key]) => key !== 'setup')
+      .filter(([key]) => !['setup', 'scoped'].includes(key))
     // Map attributes
-    .map(([key, value]) => (value === true ? key : ` ${key}="${value}"`))
-    .join(' ')
+      .map(([key, value]) => (value === true ? key : `${key}="${value}"`))
+      .join(' ')
+    : ''
 
   // Specific attributes
-  const lang = block.lang ? ` lang="${block.lang}"` : ''
-  const scoped = block.scoped ? ' scoped' : ''
-  const setup = block.attrs.setup ? ' setup' : ''
-  const src = block.src ? ` src="${block.src}"` : ''
+  const lang = block.lang ? `lang="${block.lang}"` : ''
+  const scoped = block.scoped || block.attrs?.scoped ? 'scoped' : ''
+  const setup = block.attrs?.setup ? 'setup' : ''
+  const src = block.src ? `src="${block.src}"` : ''
   const content = block.content || ''
 
-  return `<${blockName}${scoped}${attrs}${lang}${src}${setup}>\n${content}\n</${blockName}>\n`
+  return `<${[blockName, scoped, attrs, lang, src, setup].filter(Boolean).join(' ')}>\n${content}\n</${blockName}>`
 }
 
 export function createVueSFC(options: CreateVueSFCOptions = {}): MagicVueSFC {
-  const templates = options?.templates?.map(template => createVueBlock(template, 'templates')).join('') || ''
-  const scripts = options?.scripts?.map(script => createVueBlock(script, 'scripts')).join('') || ''
-  const styles = (options.styles || []).map(style => createVueBlock(style, 'styles')).join('') || ''
-  const customBlocks = options?.customs?.map(customBlock => createVueBlock(customBlock, 'customs')).join('') || ''
-  const sfcContent = `${templates}${scripts}${styles}${customBlocks}`
+  const templates = options?.templates?.map(template => createVueBlock(template, 'templates')).join('\n\n') || ''
+  const scripts = options?.scripts?.map(script => createVueBlock(script, 'scripts')).join('\n\n') || ''
+  const styles = (options.styles || []).map(style => createVueBlock(style, 'styles')).join('\n\n') || ''
+  const customBlocks = options?.customs?.map(customBlock => createVueBlock(customBlock, 'customs')).join('\n\n') || ''
+  const sfcContent = [templates, scripts, styles, customBlocks].filter(Boolean).join('\n\n')
   return new MagicVueSFC(sfcContent)
 }

@@ -1,27 +1,27 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { parse } from 'vue/compiler-sfc'
-import { createVueSFC as create, createVueBlock, createVueSFC } from '../src/vue/create'
-import { magicVueSfcDefaultOptions } from '../src/vue/sfc'
+import { parse } from 'svelte/compiler'
+import { createSvelteSFC as create, createSvelteBlock, createSvelteSFC } from '../src/svelte/create'
+import { magicSvelteSfcOptions } from '../src/svelte/sfc'
 
-describe('createVueBlock', () => {
+describe('Create Svelte Block', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    magicVueSfcDefaultOptions.parser = parse
+    magicSvelteSfcOptions.parser = parse
   })
 
   it('should create a template block correctly', () => {
     const block = {
       content: '<div>Hello World</div>',
     }
-    const result = createVueBlock(block, 'templates')
-    expect(result).toBe('<template>\n<div>Hello World</div>\n</template>')
+    const result = createSvelteBlock(block, 'templates')
+    expect(result).toBe('<div>Hello World</div>')
   })
 
   it('should create a script block correctly', () => {
     const block = {
       content: 'console.log("Hello World");',
     }
-    const result = createVueBlock(block, 'scripts')
+    const result = createSvelteBlock(block, 'scripts')
     expect(result).toBe('<script>\nconsole.log("Hello World");\n</script>')
   })
 
@@ -29,63 +29,39 @@ describe('createVueBlock', () => {
     const block = {
       content: 'body { color: red; }',
     }
-    const result = createVueBlock(block, 'styles')
+    const result = createSvelteBlock(block, 'styles')
     expect(result).toBe('<style>\nbody { color: red; }\n</style>')
   })
 
   it('should handle multiple attributes correctly', () => {
     const block = {
-      attrs: { scoped: true, lang: 'scss' },
+      attrs: { lang: 'scss' },
       content: 'body { color: red; }',
     } as const
 
-    const result = createVueBlock(block, 'styles')
-    expect(result).toBe('<style scoped lang="scss">\nbody { color: red; }\n</style>')
+    const result = createSvelteBlock(block, 'styles')
+    expect(result).toBe('<style>\nbody { color: red; }\n</style>')
   })
 
   it('should return an empty string if no block is provided', () => {
-    const result = createVueBlock(undefined, 'templates')
+    const result = createSvelteBlock(undefined, 'templates')
     expect(result).toBe('')
-  })
-
-  it('should set custom block name from block.type if available', () => {
-    const block = {
-      type: 'my-custom-block',
-      content: 'Some content',
-    }
-    const result = createVueBlock(block, 'customs')
-    expect(result).toContain('<my-custom-block>')
-
-    const blockWithNoType = {
-      content: 'Some content',
-    }
-    const resultWithNoType = createVueBlock(blockWithNoType, 'customs')
-    expect(resultWithNoType).toContain('<custom>')
-  })
-
-  it('should set custom block name from block.attrs.type if block.type is not available', () => {
-    const block = {
-      attrs: { type: 'my-custom-attr-block' },
-      content: 'Some content',
-    }
-    const result = createVueBlock(block, 'customs')
-    expect(result).toContain('<my-custom-attr-block')
   })
 
   it('should handle missing block.attrs gracefully', () => {
     const block = {
       content: '<div>Hello</div>',
     }
-    const result = createVueBlock(block, 'templates')
+    const result = createSvelteBlock(block, 'templates')
     // Ensure that the block creation works without errors and the content is present
-    expect(result).toBe('<template>\n<div>Hello</div>\n</template>')
+    expect(result).toBe('<div>Hello</div>')
   })
 
   it('should handle missing templates option gracefully', () => {
     const options = {
       scripts: [{ content: 'console.log("Hello");' }],
     }
-    const result = createVueSFC(options)
+    const result = createSvelteSFC(options)
     const sfcContent = result.toString() // Assuming toString method exists
 
     // Assert there is no <template> block but the <script> block exists
@@ -94,10 +70,10 @@ describe('createVueBlock', () => {
   })
 })
 
-describe('Create Vue SFC', () => {
+describe('Create Svelte SFC', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    magicVueSfcDefaultOptions.parser = parse
+    magicSvelteSfcOptions.parser = parse
   })
 
   it('Can create an SFC with template, script, scriptSetup, and styles', () => {
@@ -115,12 +91,6 @@ describe('Create Vue SFC', () => {
   },
 };`,
         },
-        {
-          content: 'const setupMsg = \'Hello from setup!\';',
-          attrs: {
-            setup: true,
-          },
-        },
       ],
       styles: [
         {
@@ -131,10 +101,7 @@ describe('Create Vue SFC', () => {
       ],
     })
 
-    const expectedSFC = `<template>
-<div>{{ msg }}</div>
-</template>
-
+    const expectedSFC = `<div>{{ msg }}</div>\n
 <script>
 export default {
   data() {
@@ -143,10 +110,6 @@ export default {
     };
   },
 };
-</script>
-
-<script setup>
-const setupMsg = 'Hello from setup!';
 </script>
 
 <style>
@@ -172,17 +135,9 @@ const setupMsg = 'Hello from setup!';
   },
 };`,
       }],
-      customs: [
-        {
-          type: 'docs',
-          content: 'This is a custom block with documentation.',
-        },
-      ],
     })
 
-    const expectedSFC = `<template>
-<div>{{ msg }}</div>
-</template>
+    const expectedSFC = `<div>{{ msg }}</div>
 
 <script>
 export default {
@@ -192,11 +147,7 @@ export default {
     };
   },
 };
-</script>
-
-<docs>
-This is a custom block with documentation.
-</docs>`
+</script>`
 
     expect(sfc.toString()).toBe(expectedSFC)
   })
@@ -207,13 +158,10 @@ This is a custom block with documentation.
         content: '<div>{{ msg }}</div>',
       }],
       scripts: [{
-        lang: 'ts',
-        src: './script.ts',
+        content: 'console.log("Hello");',
       }],
       styles: [
         {
-          scoped: true,
-          lang: 'scss',
           content: `.text {
   color: red;
 }`,
@@ -221,15 +169,13 @@ This is a custom block with documentation.
       ],
     })
 
-    const expectedSFC = `<template>
-<div>{{ msg }}</div>
-</template>
+    const expectedSFC = `<div>{{ msg }}</div>
 
-<script lang="ts" src="./script.ts">
-
+<script>
+console.log("Hello");
 </script>
 
-<style scoped lang="scss">
+<style>
 .text {
   color: red;
 }
