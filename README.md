@@ -68,13 +68,15 @@ When using the `parse` function, `MagicSFC` will split the supplied component us
 
 The parsing result will be splitted into a standard format recognizing `templates`, `scripts` and `styles` blocks.
 
-Each of these block will preserve the original shape from the parser, but will also expose all the relevant [MagicString](https://www.npmjs.com/package/magic-string) functions.
-
-You also get access to `_loc` and `_source` on every block, which are standard copies of the block positioning and content.
+Each of these `MagicBlock` will preserve the original shape from the parser, but will also expose all the relevant [MagicString](https://www.npmjs.com/package/magic-string) functions.
 
 Each of these function, when called, will both apply your changes on the local block.
 
+You also get access to `_loc` and `_source` on every `MagicBlock`, which are standard copies of the block positioning and content.
+
 When calling `result`, you will get the `code` as a string, and an appropriate `SourceMap` object.
+
+Look at the [implementation](./src/proxy.ts).
 
 ### ⚙️ createSFC functions
 
