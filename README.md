@@ -62,6 +62,20 @@ Should be implemented by child classes.
 
 Learn more about all the usages by looking at [the tests](/test/index.test.ts)!
 
+### ⚙️ How MagicSFC works
+
+When using the `parse` function, `MagicSFC` will split the supplied component using your framework native tooling.
+
+The parsing result will be splitted into a standard format recognizing `templates`, `scripts` and `styles` blocks.
+
+Each of these block will preserve the original shape from the parser, but will also expose all the relevant [MagicString](https://www.npmjs.com/package/magic-string) functions.
+
+You also get access to `_loc` and `_source` on every block, which are standard copies of the block positioning and content.
+
+Each of these function, when called, will both apply your changes on the local block.
+
+When calling `result`, you will get the `code` as a string, and an appropriate `SourceMap` object.
+
 ### ⚙️ createSFC functions
 
 Frameworks exports a `createSfc` function that makes generating SFCs programatically easier.

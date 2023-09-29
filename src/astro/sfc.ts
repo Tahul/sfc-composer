@@ -71,10 +71,7 @@ export class MagicSFC<T extends MagicAstroSFCOptions = MagicAstroSFCOptions> ext
           this.scripts.push(
             proxyBlock(
               this.ms,
-              {
-                ...node,
-                content: this.ms.toString().substring(node.position.start.offset + 3, node.position.end.offset - 3),
-              },
+              node,
               {
                 // Astro includes `---` in the positining, we remove them to scope the block to only its content.
                 start: node.position.start.offset + 3,
@@ -96,10 +93,7 @@ export class MagicSFC<T extends MagicAstroSFCOptions = MagicAstroSFCOptions> ext
           this.scripts.push(
             proxyBlock(
               this.ms,
-              {
-                ...node,
-                content: this.ms.toString().substring(node.position.start.offset + openingTag.length, node.position.end.offset - 9),
-              },
+              node,
               {
                 // Astro includes `<style ...>` in the positining, we strip it out thanks to the openingTag regex.
                 start: node.position.start.offset + openingTag.length,
@@ -122,10 +116,7 @@ export class MagicSFC<T extends MagicAstroSFCOptions = MagicAstroSFCOptions> ext
           this.styles.push(
             proxyBlock(
               this.ms,
-              {
-                ...node,
-                content: this.ms.toString().substring(node.position.start.offset + openingTag.length, node.position.end.offset - 8),
-              },
+              node,
               {
                 // Astro includes `<style ...>` in the positining, we strip it out thanks to the openingTag regex.
                 start: node.position.start.offset + openingTag.length,
@@ -142,10 +133,7 @@ export class MagicSFC<T extends MagicAstroSFCOptions = MagicAstroSFCOptions> ext
           this.templates.push(
             proxyBlock(
               this.ms,
-              {
-                ...node,
-                content: this.ms.toString().substring(node.position.start.offset, node.position.end.offset),
-              },
+              node,
               {
                 start: node.position.start.offset,
                 end: node.position.end.offset,

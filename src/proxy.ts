@@ -1,9 +1,11 @@
 import MagicString from 'magic-string'
 import type { SourceLocation } from './loc'
-import { createSourceLocation } from './loc'
+import { createSourceLocation, createSourceLocationFromOffsets } from './loc'
 
 export interface MagicBlockBase {
   loc?: SourceLocation | { start: number; end: number }
+  _source?: string
+  _loc?: SourceLocation
   [key: string]: any
 }
 
@@ -73,8 +75,13 @@ export function proxyBlock<T extends MagicBlockBase = MagicBlockBase>(
     },
   }
 
+  // Set source if block exists
+  block = block || {} as T
+  block._source = content
+  block._loc = createSourceLocationFromOffsets(source.toString(), blockStart, blockEnd)
+
   return new Proxy(
-    block || {},
+    block,
     {
       ...handler,
       get(target: T, key: string | symbol, receiver: any) {

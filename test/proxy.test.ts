@@ -263,7 +263,7 @@ describe('proxyBlock', () => {
     const proxiedBlock = proxyBlock(source)
 
     // Test that it behaves like an empty object
-    expect(Object.keys(proxiedBlock)).toEqual([])
+    expect(Object.keys(proxiedBlock)).toEqual(['_source', '_loc'])
 
     // Assuming you want to still check for the MagicString methods
     // (just to ensure the proxy is working correctly)

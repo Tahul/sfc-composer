@@ -61,7 +61,10 @@ export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> e
           this.ms,
           parsedSfc.html,
           {
-            start: parsedSfc.html.start, end: parsedSfc.html.end,
+            start: parsedSfc.html.start,
+            // When the HTML part of the component is empty, the `end` will somehow be greater than `start`.
+            // In that case, use the `start` as both `start` and `end` positions.
+            end: parsedSfc.html.start <= parsedSfc.html.end ? parsedSfc.html.end : parsedSfc.html.start,
           },
         ),
       ]

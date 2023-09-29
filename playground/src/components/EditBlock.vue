@@ -50,7 +50,7 @@ const cursor = ref()
 function handleCursor(e: monaco.editor.ICursorPositionChangedEvent) {
   const { lineNumber, column } = e.position
 
-  const offset = getOffset(block.value.content, lineNumber, column)
+  const offset = getOffset(block.value._source, lineNumber, column)
 
   cursor.value = offset
 
@@ -61,7 +61,7 @@ function handleCursor(e: monaco.editor.ICursorPositionChangedEvent) {
       target: block.value,
       raw: e,
       offset,
-      sourceOffset: block.value.loc.start.offset + offset,
+      sourceOffset: block.value._loc.start.offset + offset,
     },
   )
 }
@@ -73,8 +73,8 @@ const selectionEnd = ref()
 function handleSelection(e: monaco.editor.ICursorSelectionChangedEvent) {
   const { selection: { startColumn, startLineNumber, endColumn, endLineNumber } } = e
 
-  const startOffset = getOffset(block.value.content, startLineNumber, startColumn)
-  const endOffset = getOffset(block.value.content, endLineNumber, endColumn)
+  const startOffset = getOffset(block.value._source, startLineNumber, startColumn)
+  const endOffset = getOffset(block.value._source, endLineNumber, endColumn)
 
   selectionStart.value = startOffset
   selectionEnd.value = endOffset
@@ -89,8 +89,8 @@ function handleSelection(e: monaco.editor.ICursorSelectionChangedEvent) {
       raw: selection.value,
       selectionStart: selectionStart.value,
       selectionEnd: selectionEnd.value,
-      sourceStart: block.value.loc.start.offset + selectionStart.value,
-      sourceEnd: block.value.loc.start.offset + selectionEnd.value,
+      sourceStart: block.value._loc.start.offset + selectionStart.value,
+      sourceEnd: block.value._loc.start.offset + selectionEnd.value,
     },
   )
 }
