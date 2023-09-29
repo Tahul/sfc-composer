@@ -4,12 +4,12 @@ import {
   createSFC as create,
   createBlock as createVueBlock,
 } from '../src/vue/create'
-import { magicVueSfcDefaultOptions } from '../src/vue/sfc'
+import { magicVueSfcOptions } from '../src/vue/sfc'
 
 describe('Create Vue Block', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    magicVueSfcDefaultOptions.parser = parse
+    magicVueSfcOptions.parser = parse
   })
 
   it('Should create a template block correctly', () => {
@@ -100,7 +100,7 @@ describe('Create Vue Block', () => {
 describe('Create Vue SFC', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    magicVueSfcDefaultOptions.parser = parse
+    magicVueSfcOptions.parser = parse
   })
 
   it('Can create an SFC with template, script, scriptSetup, and styles', () => {

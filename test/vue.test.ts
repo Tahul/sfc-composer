@@ -1,13 +1,13 @@
 import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'vue/compiler-sfc'
-import { MagicSFC as MagicVueSFC, magicVueSfcDefaultOptions } from '../src/vue/sfc'
+import { MagicSFC as MagicVueSFC, magicVueSfcOptions } from '../src/vue/sfc'
 import { completeComponent, script, scriptSetup, style, styleScoped, template } from './utils'
 
 describe('Magic Vue SFC', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    magicVueSfcDefaultOptions.parser = parse
+    magicVueSfcOptions.parser = parse
   })
 
   it('Can create the class', async () => {
@@ -17,7 +17,7 @@ describe('Magic Vue SFC', () => {
   })
 
   it('Cannot create a Magic Vue SFC without a parser function', async () => {
-    magicVueSfcDefaultOptions.parser = undefined
+    magicVueSfcOptions.parser = undefined
 
     try {
       await new MagicVueSFC(scriptSetup).parse()
