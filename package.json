@@ -33,7 +33,9 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "vue.d.ts"
+    "vue.d.ts",
+    "svelte.d.ts",
+    "astro.d.ts"
   ],
   "scripts": {
     "build": "unbuild -c build.config.ts",
