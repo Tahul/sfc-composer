@@ -67,6 +67,7 @@ onMounted(async () => {
       readOnly: props.readonly,
       automaticLayout: true,
       scrollBeyondLastLine: false,
+      enableSplitViewResizing: true,
       minimap: {
         enabled: false,
       },

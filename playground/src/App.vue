@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { MagicVueSFC, magicVueSfcDefaultOptions } from 'sfc-composer'
-import { parse as parser } from '@vue/compiler-sfc'
-import { computed, ref, shallowRef, triggerRef } from 'vue'
+import { MagicSFC as MagicVueSFC, magicVueSfcOptions } from 'sfc-composer/vue'
+import { MagicSFC as MagicSvelteSFC, magicSvelteSfcOptions } from 'sfc-composer/svelte'
+import type { MagicSFC } from 'sfc-composer'
+import { parse as vueParser } from '@vue/compiler-sfc'
+import { parse as svelteParser } from 'svelte/compiler'
+import { computed, onMounted, ref, shallowRef, triggerRef, watch } from 'vue'
 import * as monaco from 'monaco-editor-core'
 import lineColumn from 'line-column'
 import EditBlock from './components/EditBlock.vue'
@@ -9,23 +12,41 @@ import EditSource from './components/EditSource.vue'
 import Source from './components/Source.vue'
 import Motd from './components/Motd.vue'
 import TestComponent from './components/TestComponent.vue?raw'
+import TestSvelteComponent from './components/TestSvelteComponent.svelte?raw'
 
-magicVueSfcDefaultOptions.parser = parser
+magicVueSfcOptions.parser = vueParser
+magicSvelteSfcOptions.parser = svelteParser
 
-const sfc = shallowRef(new MagicVueSFC(TestComponent, { filename: 'test-file.vue' }))
+const currentFramework = ref<'vue' | 'svelte'>('vue')
+
+const frameworks = {
+  vue: { instance: MagicVueSFC, code: TestComponent },
+  svelte: { instance: MagicSvelteSFC, code: TestSvelteComponent },
+} as Record<'vue' | 'svelte', { instance: typeof MagicSFC; code: string }>
+
+const frameworkMagicSFC = computed(() => {
+  return frameworks[currentFramework.value].instance || frameworks.vue.instance
+})
+
+watch(
+  currentFramework,
+  async fw => await updateSource(frameworks[fw].code),
+)
+
+const sfc = shallowRef<MagicSFC>(new frameworkMagicSFC.value(TestComponent, { filename: `test-file.${currentFramework.value}` }))
 
 const lastErrored = ref(false)
 
 const editingSource = ref(false)
 
-function updateSource(source: string) {
-  sfc.value = new MagicVueSFC(source, { filename: 'test-file.vue' })
+async function updateSource(source: string) {
+  sfc.value = await new frameworkMagicSFC.value(source, { filename: `test-file.${currentFramework.value}` }).parse() as MagicSFC
   editingSource.value = false
 }
 
-function update() {
+async function update() {
   try {
-    sfc.value.parse()
+    sfc.value = await sfc.value.parse() as MagicSFC
     lastErrored.value = false
   }
   catch (e) {
@@ -117,27 +138,22 @@ function handleCursor(newCursor: any) {
     },
   ])
 }
+
+onMounted(async () => {
+  await update()
+})
 </script>
 
 <template>
+  <div class="background" />
+  <Suspense />
   <main>
     <h1>🎼 SFC Composer</h1>
     <Motd />
     <EditSource v-if="editingSource" :source="sfc" @update="updateSource" @cancel="editingSource = false" />
     <template v-else>
-      <Source :key="sfc.toString()" :source="sfc" @parse="update" @mount="handleSourceMounted" @edit="editingSource = true" />
+      <Source :key="sfc.toString()" :source="sfc" :current-framwork="currentFramework" @parse="update" @mount="handleSourceMounted" @edit="editingSource = true" @framework="(value) => (currentFramework = value)" />
       <div :key="sfc.toString()" class="blocks">
-        <EditBlock
-          v-for="(_, index) of templates"
-          :id="`templates-${index}`"
-          :key="`templates-${index}`"
-          type="templates"
-          :source="sfc"
-          :index="index"
-          @parse="update"
-          @select="handleBlockSelection"
-          @cursor="handleCursor"
-        />
         <EditBlock
           v-for="(_, index) of scripts"
           :id="`scripts-${index}`"
@@ -145,6 +161,17 @@ function handleCursor(newCursor: any) {
           :source="sfc"
           :index="index"
           type="scripts"
+          @parse="update"
+          @select="handleBlockSelection"
+          @cursor="handleCursor"
+        />
+        <EditBlock
+          v-for="(_, index) of templates"
+          :id="`templates-${index}`"
+          :key="`templates-${index}`"
+          type="templates"
+          :source="sfc"
+          :index="index"
           @parse="update"
           @select="handleBlockSelection"
           @cursor="handleCursor"
@@ -174,9 +201,17 @@ function handleCursor(newCursor: any) {
       </div>
     </template>
 
-    <div class="credits">
-      <p>Made by <a href="https://twitter.com/yaeeelglx" target="_blank">@Tahul</a></p>
-      <a href="https://github.com/Tahul/sfc-composer"> ↩️&nbsp;&nbsp;Bring me back to GitHub </a>
+    <div class="credits message">
+      <p id="astro-spec">
+        (<a>*</a>) Due to its nature, the `@astrojs/compiler` package cannot be embedded into the browser, and so cannot be used in this playground. 😢
+      </p>
+      <p>
+        <span>Made by <a href="https://twitter.com/yaeeelglx" target="_blank">@Tahul</a></span>
+        <span>
+          •
+        </span>
+        <span><a href="https://github.com/Tahul/sfc-composer">Back to GitHub</a></span>
+      </p>
     </div>
   </main>
 </template>
@@ -186,7 +221,7 @@ main {
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 4rem;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -206,5 +241,15 @@ h1 {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+@media (max-width: 920px) {
+  main {
+    padding: 1rem;
+  }
+}
+
+#astro-spec {
+  opacity: 0.6;
 }
 </style>

@@ -13,6 +13,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      'sfc-composer/vue': resolve(__dirname, '../src/vue.ts'),
+      'sfc-composer/svelte': resolve(__dirname, '../src/svelte.ts'),
+      'sfc-composer/astro': resolve(__dirname, '../src/astro.ts'),
       'sfc-composer': resolve(__dirname, '../src/index.ts'),
       'path': 'path-browserify',
     },

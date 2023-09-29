@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { MagicVueSFC } from 'sfc-composer'
+import type { MagicSFC } from 'sfc-composer'
 import { ref } from 'vue'
 import Monaco from './monaco/Monaco.vue'
 
 const props = defineProps<{
-  source: MagicVueSFC
+  source: MagicSFC
 }>()
 
 const emit = defineEmits<{

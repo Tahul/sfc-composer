@@ -1,7 +1,11 @@
 <template>
-  <div class="motd">
+  <div class="message">
     <p>
-      SFC Composer provides wrapper classes around <a>MagicString</a> making the orchestration of transforms on Single File Components a breeze.
+      SFC Composer provides wrapper classes around <a href="https://github.com/rich-harris/magic-string" target="_blank">MagicString</a> making the orchestration of transforms on Single File Components a breeze.
+    </p>
+
+    <p>
+      It currently supports <a href="https://vuejs.org" target="_blank">`.vue`</a>, <a href="https://svelte.dev" target="_blank">`.svelte`</a> and <a href="https://astro.build" target="_blank">`.astro`</a> (<a href="#astro-spec">*</a>) files.
     </p>
 
     <p>
@@ -9,15 +13,26 @@
     </p>
 
     <p>
-      Learn more on <a href="https://github.com/Tahul/sfc-composer">GitHub</a>
+      <span>
+        Learn more on <a target="_blank" href="https://github.com/Tahul/sfc-composer">GitHub</a>
+      </span>
+      <span>
+        •
+      </span>
+      <span>
+        <a target="_blank" href="https://github.com/sponsors/Tahul">Support this project</a>
+      </span>
     </p>
   </div>
 </template>
 
-<style lang="postcss" scoped>
-.motd {
+<style lang="postcss">
+.message {
   width: 100%;
-  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
   border: 2px solid #646cff;
   border-radius: 4px;
   background-color: #1a1a1a;
@@ -32,7 +47,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: 1;
   opacity: 0.5;
 }
 </style>

@@ -140,20 +140,6 @@ const method = ref<keyof typeof magicStringMethods.value>('overwrite')
 function apply() {
   const args = magicStringMethods?.value?.[method.value]
 
-  /*
-  try {
-    const clone = new MagicVueSFC(props.source.ms.toString())
-    const cloneTarget = clone?.[props.type]?.[Number(props.index)]
-    // @ts-ignore
-    cloneTarget[method.value](...args)
-    clone.parse()
-  }
-  catch (e) {
-    console.log({ 'compile-error': e })
-    return
-  }
-  */
-
   if (block.value[method.value]) {
     // @ts-ignore
     block.value[method.value](...args)
@@ -170,10 +156,15 @@ function handleMounted(e: monaco.editor.IStandaloneCodeEditor) {
 
 <template>
   <div class="block">
+    <div class="selection">
+      <p>
+        ℹ️ <span>sfc[`{{ type }}`][{{ index }}]</span>
+      </p>
+    </div>
     <div class="output">
-      <div>
+      <div class="content-wrapper">
         <MonacoEditor
-          class="editor"
+          class="editor content"
           :value="localContent"
           :filename="`${id}.${lang}`"
           :lang="lang"
@@ -183,9 +174,9 @@ function handleMounted(e: monaco.editor.IStandaloneCodeEditor) {
           @mount="handleMounted"
         />
       </div>
-      <div>
+      <div class="parsed-wrapper">
         <MonacoEditor
-          class="editor"
+          class="editor parsed"
           :value="parsedLocalContent"
           :filename="`${id}.${lang}`"
           lang="typescript"
@@ -195,9 +186,6 @@ function handleMounted(e: monaco.editor.IStandaloneCodeEditor) {
     </div>
     <div class="actions">
       <div class="selection">
-        <p>
-          ℹ️ <span>sfc[`{{ type }}`][{{ index }}]</span>
-        </p>
         <p>
           Cursor: <span>{{ cursor || 0 }}</span>
         </p>
@@ -238,21 +226,19 @@ h2 {
 
 p {
   margin: 0;
-  margin-block-end: 0.5rem !important;
-  margin-block-start: 0.5rem !important;
 }
 
 .block {
   width: 100%;
   margin-top: 0;
-  padding-bottom: 2rem;
+  padding-bottom: 1rem;
   margin-bottom: 2rem;
-  border-bottom: 4px solid #1a1a1a;
 }
 
 .selection {
   width: auto;
-  gap: 1rem;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
 }
 
 .selection p {
@@ -260,7 +246,6 @@ p {
   padding: 0.5rem 1rem;
   border-radius: 4px;
   font-weight: bold;
-  width: 240px;
 }
 
 .selection span {
@@ -273,7 +258,7 @@ p {
 
 .ms-functions {
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .editor {
@@ -282,15 +267,98 @@ p {
 }
 
 .actions {
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .output {
   display: flex;
+  flex-direction: row;
   width: 100%;
 
   & > div {
     width: 50%;
+  }
+}
+
+.content {
+  border-right: 2px solid #646cff;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.output {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+@media (max-width: 920px) {
+  .actions {
+    gap: 0.5rem;
+  }
+  .output {
+    flex-direction: column;
+
+    & > div {
+      width: 100%;
+    }
+
+    .content {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom: 2px solid #646cff;
+      border-right: none;
+    }
+
+    .parsed {
+      border-top-right-radius: 0;
+      border-top-left-radius: 0;
+    }
+  }
+  .selection, .ms-functions {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+
+    & > p {
+      display: block;
+      width: 100%;
+    }
+
+    & > input, button, select, div {
+      width: 100%;
+    }
+  }
+}
+
+.parsed-wrapper,
+.content-wrapper {
+  position: relative;
+
+  &::before {
+    display: block;
+    position: absolute;
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #646cff;
+    border-left: 1px solid #646cff;
+    border-bottom-left-radius: 4px;
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    z-index: 99;
+    right: 0;
+    top: 0;
+  }
+}
+
+.parsed-wrapper {
+  &::before {
+    content: 'Parsed';
+  }
+}
+
+.content-wrapper {
+  &::before {
+    content: 'Content';
+    right: 2px
   }
 }
 </style>

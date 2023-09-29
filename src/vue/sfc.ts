@@ -13,7 +13,7 @@ export interface MagicVueSFCOptions extends MagicSFCOptions {
   silent?: boolean
 }
 
-export const magicVueSfcDefaultOptions: MagicVueSFCOptions = {
+export const magicVueSfcOptions: MagicVueSFCOptions = {
   parser: undefined,
   silent: false,
   parserOptions: undefined,
@@ -29,7 +29,7 @@ export class MagicSFC<T extends MagicVueSFCOptions = MagicVueSFCOptions> extends
   constructor(
     source: string | MagicString,
     userOptions?: T,
-    defaultOptions = magicVueSfcDefaultOptions,
+    defaultOptions = magicVueSfcOptions,
   ) {
     super(source, userOptions, defaultOptions as MagicVueSFCOptions)
   }
