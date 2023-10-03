@@ -2,7 +2,7 @@ import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { parse } from 'svelte/compiler'
 import { MagicSFC as MagicSvelteSFC, magicSvelteSfcOptions } from '../src/svelte/sfc'
-import { completeSvelteComponent, svelteScript, svelteStyle, svelteTemplate } from './utils'
+import { completeSvelteComponent, svelteScript, svelteStyle, svelteTemplate, svelteTypescriptScript } from './utils'
 
 describe('Magic Svelte SFC', () => {
   beforeEach(() => {
@@ -51,9 +51,10 @@ describe('Magic Svelte SFC', () => {
     expect(sfc.scripts[0]).toBeInstanceOf(Object)
   })
 
-  it('Can parse a <script setup> tag', async () => {
-    const sfc = await new MagicSvelteSFC(svelteScript).parse()
+  it('Can parse a <script lang="ts"> tag', async () => {
+    const sfc = await new MagicSvelteSFC(svelteTypescriptScript).parse()
     expect(sfc.scripts[0]).toBeInstanceOf(Object)
+    expect(sfc.scripts[0].attrs.lang).toBe('ts')
   })
 
   it('Can parse a HTML content', async () => {

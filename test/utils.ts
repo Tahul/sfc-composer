@@ -11,6 +11,7 @@ export const completeComponent = [script, scriptSetup, template, style, styleSco
 /* SVELTE */
 
 export const svelteScript = '<script>let name = `world`;</script>'
+export const svelteTypescriptScript = '<script lang="ts">let name = `world`;</script>'
 export const svelteTemplate = `
 <h1>Hello {name}!</h1>
 `

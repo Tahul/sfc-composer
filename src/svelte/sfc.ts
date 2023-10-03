@@ -72,6 +72,12 @@ export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> e
 
     // <script>
     if (parsedSfc?.instance) {
+      // Resolve `lang="ts"` manually as an attr, as Svelte parser does not gives a hint on that.
+      // @ts-expect-error - Svelte typings seem wrong
+      const scriptTag = this.ms.toString().substring(parsedSfc.instance.start, parsedSfc.instance.content.start)
+      parsedSfc.instance.attrs = parsedSfc.instance.attrs || {}
+      if (scriptTag.includes('lang="ts"')) { parsedSfc.instance.attrs.lang = 'ts' }
+
       this.scripts = [
         proxyBlock(
           this.ms,
