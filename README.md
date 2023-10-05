@@ -227,7 +227,7 @@ createVueSFC({
 
   ```ts
   import { MagicSFC as MagicSvelteSFC } from 'sfc-composer/svelte'
-  import { parse } from 'svelte/compiler'
+  import { preprocess } from 'svelte/compiler'
 
   async function transformSvelteSFC() {
     const sfc = new MagicSvelteSFC(
@@ -235,7 +235,7 @@ createVueSFC({
       + '<div>Hello World!</div>\n\n'
       + '<style>div { color: red; }</style>',
       {
-        parser: parse
+        parser: preprocess
       }
     )
 
@@ -314,7 +314,7 @@ createVueSFC({
 
   ```ts
   import { MagicSFC as MagicAstroSFC } from 'sfc-composer/astro'
-  import { parse } from '@astrojs/compiler'
+  import { preprocess } from '@astrojs/compiler'
 
   async function transformAstroSFC() {
     const sfc = new MagicAstroSFC(
@@ -322,7 +322,7 @@ createVueSFC({
       + '<div>Hello World!</div>\n\n'
       + '<style>div { color: red; }</style>',
       {
-        parser: parse
+        parser: preprocess
       }
     )
 

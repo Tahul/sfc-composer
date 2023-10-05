@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { parse } from 'svelte/compiler'
+import { preprocess } from 'svelte/compiler'
 import { createSFC as create, createBlock as createSvelteBlock } from '../src/svelte/create'
 import { magicSvelteSfcOptions } from '../src/svelte/sfc'
 
 describe('Create Svelte Block', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    magicSvelteSfcOptions.parser = parse
+    magicSvelteSfcOptions.parser = preprocess
   })
 
   it('Should create a template block correctly', () => {
@@ -73,7 +73,7 @@ describe('Create Svelte Block', () => {
 describe('Create Svelte SFC', () => {
   beforeEach(() => {
     // Set default parser for MagicVueSFC
-    magicSvelteSfcOptions.parser = parse
+    magicSvelteSfcOptions.parser = preprocess
   })
 
   it('Can create an SFC with template, script, scriptSetup, and styles', () => {

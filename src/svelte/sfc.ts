@@ -1,17 +1,25 @@
-import type { Ast, ParserOptions } from 'svelte/types/compiler/interfaces'
 import type MagicString from 'magic-string'
+import { type preprocess } from 'svelte/compiler'
 import type { MagicBlock } from '../proxy'
 import { proxyBlock } from '../proxy'
-import type { MagicSFCOptions } from '../index'
-import { MagicSFC as MagicSFCBase } from '../index'
+import type { MagicSFCOptions, SourceLocation } from '../index'
+import { MagicSFC as MagicSFCBase, findAllSourceLocations } from '../index'
 
-type SvelteParseFunction = (source: string, options: ParserOptions) => Ast
+type SveltePreprocessFunction = typeof preprocess
 
-type SvelteAST = Required<Ast>
+interface SveltePreprocessBlock {
+  parsed: {
+    attributes?: Record<string, string | boolean>
+    content?: string
+    markup?: string
+    filename?: string
+  }
+  attrs?: Record<string, string | boolean>
+  loc: SourceLocation
+}
 
 export interface MagicSvelteSFCOptions extends MagicSFCOptions {
-  parser?: SvelteParseFunction
-  parserOptions?: ParserOptions
+  parser?: SveltePreprocessFunction
   silent?: boolean
 }
 
@@ -23,10 +31,10 @@ export const magicSvelteSfcOptions: MagicSvelteSFCOptions = {
 
 export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> extends MagicSFCBase<T> {
   declare public options: MagicSvelteSFCOptions
-  declare public parsed?: Ast
-  declare public templates: MagicBlock<SvelteAST['html']>[]
-  declare public scripts: MagicBlock<SvelteAST['instance']>[]
-  declare public styles: MagicBlock<SvelteAST['css']>[]
+  declare public parsed: undefined
+  declare public templates: MagicBlock<SveltePreprocessBlock>[]
+  declare public scripts: MagicBlock<SveltePreprocessBlock>[]
+  declare public styles: MagicBlock<SveltePreprocessBlock>[]
 
   constructor(
     source: string | MagicString,
@@ -38,73 +46,69 @@ export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> e
 
   public async parse(): Promise<MagicSFC<T>> {
     const {
-      parser,
       silent = true,
-      parserOptions = {},
+      parser,
     } = this.options
 
     if (!parser) {
-      if (!silent) { throw new Error('You must provide a `parser` function (from svelte/compiler) in options when using MagicSvelteSFC.') }
+      if (!silent) { throw new Error('You must provide a `parser` function (usually preprocess from svelte/compiler) in options when using MagicSvelteSFC.') }
       return this
     }
 
-    const parsedSfc = parser(this.ms.toString(), parserOptions)
-
-    if (!parsedSfc) { return this }
-
-    this.parsed = parsedSfc
-
-    // <html>
-    if (parsedSfc?.html) {
-      this.templates = [
-        proxyBlock(
-          this.ms,
-          parsedSfc.html,
-          {
-            start: parsedSfc.html.start,
-            // When the HTML part of the component is empty, the `end` will somehow be greater than `start`.
-            // In that case, use the `start` as both `start` and `end` positions.
-            end: parsedSfc.html.start <= parsedSfc.html.end ? parsedSfc.html.end : parsedSfc.html.start,
-          },
-        ),
-      ]
-    }
-
-    // <script>
-    if (parsedSfc?.instance) {
-      // Resolve `lang="ts"` manually as an attr, as Svelte parser does not gives a hint on that.
-      // @ts-expect-error - Svelte typings seem wrong
-      const scriptTag = this.ms.toString().substring(parsedSfc.instance.start, parsedSfc.instance.content.start)
-      parsedSfc.instance.attrs = parsedSfc.instance.attrs || {}
-      if (scriptTag.includes('lang="ts"')) { parsedSfc.instance.attrs.lang = 'ts' }
-
-      this.scripts = [
-        proxyBlock(
-          this.ms,
-          parsedSfc.instance,
-          {
-            // @ts-expect-error - Svelte typings seem wrong; this is valid place to get <script> start
-            start: parsedSfc.instance.content.start,
-            // @ts-expect-error - Svelte typings seem wrong; this is valid place to get <script> end
-            end: parsedSfc.instance.content.end,
-          },
-        ),
-      ]
-    }
-
-    // <style>
-    if (parsedSfc?.css) {
-      this.styles = [
-        proxyBlock(
-          this.ms,
-          parsedSfc.css,
-          {
-            start: parsedSfc.css.content.start,
-            end: parsedSfc.css.content.end,
-          },
-        ),
-      ]
-    }
+    await parser(
+      this.ms.toString(),
+      {
+        markup: ({ content, filename }) => {
+          this.templates = [
+            proxyBlock(
+              this.ms,
+              {
+                parsed: {
+                  content,
+                  filename,
+                },
+                loc: findAllSourceLocations(this.source, content)?.[0],
+              },
+            ),
+          ]
+        },
+        script: ({ content, attributes, markup, filename }) => {
+          this.scripts = [
+            proxyBlock(
+              this.ms,
+              {
+                parsed: {
+                  content,
+                  attributes,
+                  markup,
+                  filename,
+                },
+                attrs: attributes,
+                loc: findAllSourceLocations(markup, content)?.[0],
+              },
+            ),
+          ]
+        },
+        style: ({ attributes, content, markup, filename }) => {
+          this.styles = [
+            proxyBlock(
+              this.ms,
+              {
+                parsed: {
+                  attributes,
+                  content,
+                  markup,
+                  filename,
+                },
+                attrs: attributes,
+                loc: findAllSourceLocations(markup, content)?.[0],
+              },
+            ),
+          ]
+        },
+        name: 'svelte-sfc-composer',
+      },
+    )
 
     return this
   }

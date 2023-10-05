@@ -1,13 +1,13 @@
 import MagicString, { SourceMap } from 'magic-string'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { parse } from 'svelte/compiler'
+import { preprocess } from 'svelte/compiler'
 import { MagicSFC as MagicSvelteSFC, magicSvelteSfcOptions } from '../src/svelte/sfc'
 import { completeSvelteComponent, svelteScript, svelteStyle, svelteTemplate, svelteTypescriptScript } from './utils'
 
 describe('Magic Svelte SFC', () => {
   beforeEach(() => {
     // Set default parser for MagicSvelteSFC
-    magicSvelteSfcOptions.parser = parse
+    magicSvelteSfcOptions.parser = preprocess
   })
 
   it('Can create the class', async () => {
@@ -24,7 +24,7 @@ describe('Magic Svelte SFC', () => {
       throw new Error('Code should not reach this point!')
     }
     catch (e) {
-      expect(e.message).toBe('You must provide a `parser` function (from svelte/compiler) in options when using MagicSvelteSFC.')
+      expect(e.message).toBe('You must provide a `parser` function (usually preprocess from svelte/compiler) in options when using MagicSvelteSFC.')
     }
   })
 
@@ -113,10 +113,10 @@ describe('Magic Svelte SFC', () => {
     const sfc = await new MagicSvelteSFC(`${emptyScript}\n${emptyTemplate}\n${emptyStyle}`).parse()
 
     // Svelte SFC parser does detect empty script blocks
-    expect(sfc.scripts.length).toBeTruthy()
+    expect(sfc.scripts.length).toBeFalsy()
 
     // Svelte SFC parser does detect empty style blocks
-    expect(sfc.styles.length).toBeTruthy()
+    expect(sfc.styles.length).toBeFalsy()
 
     // Svelte SFC parser does not detect empty HTML
     expect(sfc.templates.length).toBeTruthy()
