@@ -59,7 +59,7 @@ export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> e
       this.ms.toString(),
       {
         markup: ({ content, filename }) => {
-          this.templates = [
+          this.templates.push(
             proxyBlock(
               this.ms,
               {
@@ -70,10 +70,10 @@ export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> e
                 loc: findAllSourceLocations(this.source, content)?.[0],
               },
             ),
-          ]
+          )
         },
         script: ({ content, attributes, markup, filename }) => {
-          this.scripts = [
+          this.scripts.push(
             proxyBlock(
               this.ms,
               {
@@ -87,10 +87,10 @@ export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> e
                 loc: findAllSourceLocations(markup, content)?.[0],
               },
             ),
-          ]
+          )
         },
         style: ({ attributes, content, markup, filename }) => {
-          this.styles = [
+          this.styles.push(
             proxyBlock(
               this.ms,
               {
@@ -104,7 +104,7 @@ export class MagicSFC<T extends MagicSvelteSFCOptions = MagicSvelteSFCOptions> e
                 loc: findAllSourceLocations(markup, content)?.[0],
               },
             ),
-          ]
+          )
         },
         name: 'svelte-sfc-composer',
       },

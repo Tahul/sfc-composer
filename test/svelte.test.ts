@@ -57,6 +57,22 @@ describe('Magic Svelte SFC', () => {
     expect(sfc.scripts[0].attrs.lang).toBe('ts')
   })
 
+  it('Can multiple <script> tag', async () => {
+    const component = `<script lang="ts">let name = \`world\`;</script>
+<div class={testVariants}>
+  <script>
+    const test = 'hello'
+  </script>
+  Variants component
+</div>
+`
+    const sfc = await new MagicSvelteSFC(component).parse()
+    expect(sfc.scripts[0]).toBeInstanceOf(Object)
+    expect(sfc.scripts[0].attrs.lang).toBe('ts')
+    expect(sfc.scripts[1]).toBeInstanceOf(Object)
+    expect(sfc.scripts[1].attrs).toStrictEqual({})
+  })
+
   it('Can parse a HTML content', async () => {
     const sfc = await new MagicSvelteSFC(svelteTemplate).parse()
     expect(sfc.templates[0]).toBeInstanceOf(Object)
