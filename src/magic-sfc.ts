@@ -1,7 +1,14 @@
 import type { MagicStringOptions, SourceMap, SourceMapOptions } from 'magic-string'
 import MagicString from 'magic-string'
-import type { TransformResult } from 'vite'
 import type { MagicBlock } from './proxy'
+
+export interface TransformResult {
+  code: string
+  map: SourceMap | null
+  etag?: string
+  deps?: string[]
+  dynamicDeps?: string[]
+}
 
 export interface MagicSFCOptions extends MagicStringOptions {
   parser?: any
